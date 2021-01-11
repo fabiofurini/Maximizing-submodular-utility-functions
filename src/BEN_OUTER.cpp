@@ -643,7 +643,7 @@ void build_model_BEN(instance *inst)
 
 				inst->rhs[0]=inst->budget_per_element;
 
-				inst->sense[0]='E';
+				inst->sense[0]='L';
 
 				int counter=0;
 				for ( int kk = 0; kk < inst->n_meta_items; kk++ )
