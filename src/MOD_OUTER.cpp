@@ -35,13 +35,86 @@ int CPXPUBLIC mycutcallback_MOD_OUTER(CPXCENVptr env,void *cbdata,int wherefrom,
 		double denominator=compute_val_diff(inst,punto);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if( denominator>-inst->TOLL_DERIVATIVE && denominator<inst->TOLL_DERIVATIVE)
+		{
+			cout << "NULL DERIVATIVE!";
+
+			int nzcnt=1;
+
+			inst->_cut_MOD_OUTER_rmatval[0]=1.0;
+
+			inst->_cut_MOD_OUTER_rmatind[0]=inst->n_meta_items+k;
+
+			inst->_cut_MOD_OUTER_RHS = punto;
+
+			status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_MOD_OUTER_RHS,'L',inst->_cut_MOD_OUTER_rmatind,inst->_cut_MOD_OUTER_rmatval,0);
+			if(status!=0){
+				printf("CPXcutcallbackadd\n");
+				exit(-1);
+			}
+
+			inst->n_cuts_MOD_LOWER++;
+
+			(*useraction_p)=CPX_CALLBACK_SET;
+
+		}
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if(denominator<-inst->TOLL_DERIVATIVE)
 		{
 
-			cout << "BUG NEGATIVE DERIVATIVE\n\n";
-			exit(-1);
+
+
+			double nu=inst->_cut_MOD_OUTER_Y[inst->n_meta_items+k];
+
+			double magic_value= (compute_val_funct(inst,punto) - compute_val_diff(inst,punto) * punto) / compute_val_diff(inst,punto);
+
+			inst->_cut_MOD_OUTER_RHS=punto;
+
+			if( nu/denominator < punto + magic_value - inst->TOLL_VIOL)
+			{
+
+				int nzcnt=inst->n_meta_items+1;
+
+				for (int i = 0; i < inst->n_meta_items; i++)
+				{
+					if(inst->_cut_MOD_OUTER_Y[i]<0.5)
+					{
+						inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_super_rho[k][i];
+						inst->_cut_MOD_OUTER_rmatind[i]=i;
+					}
+					else
+					{
+						inst->_cut_MOD_OUTER_RHS-=inst->_cut_MOD_OUTER_single_rho[k][i];
+						inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_single_rho[k][i];
+						inst->_cut_MOD_OUTER_rmatind[i]=i;
+					}
+				}
+
+				inst->_cut_MOD_OUTER_rmatval[inst->n_meta_items]=1.0/denominator;
+
+				inst->_cut_MOD_OUTER_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
+
+				inst->_cut_MOD_OUTER_RHS += magic_value;
+
+				status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_MOD_OUTER_RHS,'G',inst->_cut_MOD_OUTER_rmatind,inst->_cut_MOD_OUTER_rmatval,0);
+				if(status!=0){
+					printf("CPXcutcallbackadd\n");
+					exit(-1);
+				}
+
+				//				cout << "MOD_LOWER ADDED CUT\n\n";
+				//				cin.get();
+
+				inst->n_cuts_MOD_LOWER++;
+
+				(*useraction_p)=CPX_CALLBACK_SET;
+
+			}
 
 		}
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		double nu=inst->_cut_MOD_OUTER_Y[inst->n_meta_items+k];
@@ -236,7 +309,7 @@ void build_model_MOD_OUTER(instance *inst)
 	}
 
 	//opening the pointer to the problem
-	inst->lp_MOD_OUTER=CPXcreateprob(inst->env_MOD_OUTER,&(inst->status),"BEN");
+	inst->lp_MOD_OUTER=CPXcreateprob(inst->env_MOD_OUTER,&(inst->status),"MOD_OUTER");
 	if(inst->status!=0)
 	{
 		printf("cannot create problem\n");
@@ -422,7 +495,7 @@ void build_model_MOD_OUTER(instance *inst)
 			inst->rmatval=(double*) calloc(inst->nzcnt,sizeof(double));
 
 			inst->rhs[0]=inst->cardinality;
-			inst->sense[0]='E';
+			inst->sense[0]='L';
 
 			for ( int i = 0; i < inst->n_meta_items; i++ )
 			{
@@ -615,7 +688,7 @@ void build_model_MOD_OUTER(instance *inst)
 		printf("error in CPXwriteprob\n");
 		exit(-1);
 	}
-	cout << "write BEN.lp\n\n";
+	cout << "write MOD_OUTER.lp\n\n";
 	exit(-1);
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 #endif
@@ -997,10 +1070,10 @@ void solve_model_MOD_OUTER(instance *inst)
 			<<  inst->item_not_covered<< "\t"
 			<<  inst->item_single_covered<< "\t"
 
-			<<  inst->n_cuts_BEN_1 << "\t"
-			<<  inst->n_cuts_BEN_FRAC_1 << "\t"
-			<<  inst->n_cuts_BEN_2 << "\t"
-			<<  inst->n_cuts_BEN_FRAC_2 << "\t"
+			<<  inst->n_cuts_MOD_OUTER_1 << "\t"
+			<<  inst->n_cuts_MOD_OUTER_FRAC_1 << "\t"
+			<<  inst->n_cuts_MOD_OUTER_2 << "\t"
+			<<  inst->n_cuts_MOD_OUTER_FRAC_2 << "\t"
 
 			<<  inst->n_cuts_MOD_LOWER << "\t"
 

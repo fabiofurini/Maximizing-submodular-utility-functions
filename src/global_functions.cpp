@@ -8,15 +8,17 @@ void set_lambda_and_alpha(instance *inst)
 /*****************************************************************/
 {
 	double D_tot=0.0;
+
 	for ( int i = 0; i < inst->m_scenarios; i++)
 	{
 		double D=0.0;
+
 		for(int j=0;j<inst->n_items;j++)
 		{
 			D+=inst->a[i][j];
 		}
 
-		cout << "scenario\t" << i << "\ttotal demand\t" << D << "\t total \t" << D_tot << endl;
+		cout << "scenario\t" << i << "\t total demand\t" << D << "\t total \t" << D_tot << endl;
 
 		D_tot+=D;
 	}
@@ -27,13 +29,15 @@ void set_lambda_and_alpha(instance *inst)
 
 	inst->lambda_orig=inst->lambda;
 
-	inst->lambda= (inst->lambda*D_tot) /  (double)inst->m_scenarios;
+	inst->lambda= inst->lambda * inst->AVERAGE_DEMAND;
 
 	cout << "SCALED value of LAMBDA\t" << inst->lambda << endl;
 
 	cout << "scale_factor_alpha\t" << inst->scale_factor_alpha << endl;
 
-	inst->alpha = 1.0 / (inst->scale_factor_alpha*(D_tot / (double)inst->m_scenarios));
+//	inst->alpha = 1.0 / (inst->scale_factor_alpha * inst->AVERAGE_DEMAND);
+
+	inst->alpha = inst->scale_factor_alpha / (inst->lambda);
 
 	cout << "SCALED value of alpha\t" << inst->alpha << endl;
 }

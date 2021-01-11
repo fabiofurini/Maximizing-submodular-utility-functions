@@ -71,7 +71,6 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 		if( denominator>-inst->TOLL_DERIVATIVE && denominator<inst->TOLL_DERIVATIVE)
 		{
 			cout << "NULL DERIVATIVE!";
-			cin.get();
 
 			int nzcnt=1;
 
@@ -599,7 +598,7 @@ void build_model_BEN(instance *inst)
 			inst->rmatval=(double*) calloc(inst->nzcnt,sizeof(double));
 
 			inst->rhs[0]=inst->cardinality;
-			inst->sense[0]='E';
+			inst->sense[0]='L';
 
 			for ( int i = 0; i < inst->n_meta_items; i++ )
 			{
@@ -983,9 +982,6 @@ void solve_model_BEN(instance *inst)
 
 			cout << "SCENARIO\t" << j << "\tval:\t" << inst->x[inst->n_meta_items+j] << endl;
 		}
-		printf("\n");
-
-
 		printf("\n");
 #endif
 

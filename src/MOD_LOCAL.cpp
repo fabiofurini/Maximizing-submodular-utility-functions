@@ -399,7 +399,7 @@ void build_model_MOD_LOCAL(instance *inst)
 			inst->rmatval=(double*) calloc(inst->nzcnt,sizeof(double));
 
 			inst->rhs[0]=inst->cardinality;
-			inst->sense[0]='E';
+			inst->sense[0]='L';
 
 			for ( int i = 0; i < inst->n_meta_items; i++ )
 			{
