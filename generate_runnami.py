@@ -3,7 +3,7 @@
 """
 Prints the runlist from global variables and lists (defined after the def. of this function)
 """
-def printRunList(TEST_ID, f):
+def printRunList(TEST_ID):
     for algo in _ALGO:
         for option in _OPTION:
             if algo != 14 and option == -3:
