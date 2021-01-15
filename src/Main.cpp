@@ -294,6 +294,13 @@ int main(int argc, char** argv)
 	if(inst.algorithm==11)
 	{
 
+
+		if(inst.type_of_zed_function==3)
+		{
+			cout << "METHOD NOT VALID FOR THESE UTILITY FUNCTIONs...\n";
+			exit(-1);
+		}
+
 		cout << "\n\n----------->>>>>>MOD GLOBAL\n";
 
 		///////////////////////////
@@ -306,6 +313,12 @@ int main(int argc, char** argv)
 
 	if(inst.algorithm==12)
 	{
+
+		if(inst.type_of_zed_function==3)
+		{
+			cout << "METHOD NOT VALID FOR THESE UTILITY FUNCTIONs...\n";
+			exit(-1);
+		}
 
 		cout << "\n\n----------->>>>>>MOD LOCAL\n";
 

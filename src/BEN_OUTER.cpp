@@ -7,6 +7,9 @@
 //#define write_prob
 
 //#define DEBUG
+//#define DEBUG_CUTS
+
+//#define print_rho
 
 /*****************************************************************/
 int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *cbhandle,int *useraction_p)
@@ -130,6 +133,17 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 
 				inst->_cut_BEN_RHS += magic_value;
 
+#ifdef 	DEBUG_CUTS
+		cout << "***MOD_LOWER***\n";
+		for (int i = 0; i < inst->n_meta_items; i++)
+		{
+			cout << "META-ITEM\t" << i << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[i] << "\t \t"<< inst->_cut_BEN_rmatval[i] << endl;
+		}
+		cout << "SCENARIO\t" << k << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_BEN_rmatval[inst->n_meta_items] << endl;
+		cout << "RHS\t" << inst->_cut_BEN_RHS << endl;
+		cin.get();
+#endif
+
 				status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_BEN_RHS,'G',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
 				if(status!=0){
 					printf("CPXcutcallbackadd\n");
@@ -204,11 +218,19 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 
 				inst->_cut_BEN_RHS+=magic_value;
 
+#ifdef 	DEBUG_CUTS
+		cout << "***BEN_UPPER***\n";
+		for (int i = 0; i < inst->n_meta_items; i++)
+		{
+			cout << "META-ITEM\t" << i << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[i] << "\t \t"<< inst->_cut_BEN_rmatval[i] << endl;
+		}
+		cout << "SCENARIO\t" << k << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_BEN_rmatval[inst->n_meta_items] << endl;
+		cout << "RHS\t" << inst->_cut_BEN_RHS << endl;
+		cin.get();
+#endif
 
 				if(inst->_cut_BEN_Y[inst->n_meta_items+k] > (inst->_cut_BEN_RHS + first_part) + inst->TOLL_VIOL)
 				{
-
-
 
 					status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_BEN_RHS,'L',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
 					if(status!=0)
@@ -449,7 +471,7 @@ void build_model_BEN(instance *inst)
 
 	for ( int i = 0; i < inst->m_scenarios; i++)
 	{
-		inst->obj[counter]=1;
+		inst->obj[counter]=1.0;
 		inst->lb[counter]=0.0;
 
 		switch (inst->type_of_zed_function)
@@ -786,8 +808,17 @@ void build_model_BEN(instance *inst)
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef print_rho
+	for ( int k = 0; k < inst->m_scenarios; k++ )
+	{
+		cout << "SCENARIO\t" << k << endl;
+		for ( int j = 0; j < inst->n_meta_items; j++)
+		{
+			cout << "META-ITEM\t" << j << "\t single_rho \t"<< inst->_cut_BEN_single_rho[k][j] << "\t super_rho \t" << inst->_cut_BEN_super_rho[k][j] << endl;
+		}
+	}
 	cout << "RO COMPUTED\n";
-
+#endif
 
 #ifdef write_prob
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////

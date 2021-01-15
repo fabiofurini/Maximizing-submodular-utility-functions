@@ -7,6 +7,11 @@
 
 //#define write_prob
 
+//#define DEBUG_CUTS
+
+//#define print_rho
+
+
 /*****************************************************************/
 int CPXPUBLIC mycutcallback_MOD_OUTER(CPXCENVptr env,void *cbdata,int wherefrom,void *cbhandle,int *useraction_p)
 /*****************************************************************/
@@ -37,7 +42,8 @@ int CPXPUBLIC mycutcallback_MOD_OUTER(CPXCENVptr env,void *cbdata,int wherefrom,
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if( denominator>-inst->TOLL_DERIVATIVE && denominator<inst->TOLL_DERIVATIVE)
 		{
-			cout << "NULL DERIVATIVE!";
+
+			//cout << "NULL DERIVATIVE!";
 
 			int nzcnt=1;
 
@@ -63,7 +69,7 @@ int CPXPUBLIC mycutcallback_MOD_OUTER(CPXCENVptr env,void *cbdata,int wherefrom,
 		if(denominator<-inst->TOLL_DERIVATIVE)
 		{
 
-
+			//cout << "NEGATIVE DERIVATIVE!";
 
 			double nu=inst->_cut_MOD_OUTER_Y[inst->n_meta_items+k];
 
@@ -97,6 +103,18 @@ int CPXPUBLIC mycutcallback_MOD_OUTER(CPXCENVptr env,void *cbdata,int wherefrom,
 
 				inst->_cut_MOD_OUTER_RHS += magic_value;
 
+#ifdef 	DEBUG_CUTS
+				cout << "***MOD_LOWER***\n";
+				for (int i = 0; i < inst->n_meta_items; i++)
+				{
+					cout << "META-ITEM\t" << i << "\t _cut_MOD_OUTER_rmatind \t" << inst->_cut_MOD_OUTER_rmatind[i] << "\t \t"<< inst->_cut_MOD_OUTER_rmatval[i] << endl;
+				}
+				cout << "SCENARIO\t" << k << "\t _cut_MOD_OUTER_rmatind \t" << inst->_cut_MOD_OUTER_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_MOD_OUTER_rmatval[inst->n_meta_items] << endl;
+				cout << "RHS\t" << inst->_cut_MOD_OUTER_RHS << endl;
+				cin.get();
+#endif
+
+
 				status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_MOD_OUTER_RHS,'G',inst->_cut_MOD_OUTER_rmatind,inst->_cut_MOD_OUTER_rmatval,0);
 				if(status!=0){
 					printf("CPXcutcallbackadd\n");
@@ -116,143 +134,157 @@ int CPXPUBLIC mycutcallback_MOD_OUTER(CPXCENVptr env,void *cbdata,int wherefrom,
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		double nu=inst->_cut_MOD_OUTER_Y[inst->n_meta_items+k];
-
-		//G_k(S)
-		double  first_part=compute_subset_coverage_utility_scenario(inst,inst->_cut_MOD_OUTER_Y,k);
-
-		double magic_value= (compute_val_funct(inst,first_part) - compute_val_diff(inst,first_part) * first_part) / compute_val_diff(inst,first_part);
-
-
-		if(inst->option==1 || inst->option==3)
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if(denominator>inst->TOLL_DERIVATIVE)
 		{
 
-			///FIRST CUT (UPPER BOUND)
+			double nu=inst->_cut_MOD_OUTER_Y[inst->n_meta_items+k];
 
-			inst->_cut_MOD_OUTER_RHS=first_part;
+			//G_k(S)
+			double  first_part=compute_subset_coverage_utility_scenario(inst,inst->_cut_MOD_OUTER_Y,k);
 
-			for (int i = 0; i < inst->n_meta_items; i++)
-			{
-				if(inst->_cut_MOD_OUTER_Y[i]>0.5)
-				{
-					inst->_cut_MOD_OUTER_local_rho[i]=0;
-				}
-				else
-				{
-					inst->_cut_MOD_OUTER_Y[i]=1.0;
-					inst->_cut_MOD_OUTER_local_rho[i]=compute_subset_coverage_utility_scenario(inst,inst->_cut_MOD_OUTER_Y,k)-first_part;
-					inst->_cut_MOD_OUTER_Y[i]=0.0;
-				}
-			}
+			double magic_value= (compute_val_funct(inst,first_part) - compute_val_diff(inst,first_part) * first_part) / compute_val_diff(inst,first_part);
 
-			//			if( nu/denominator > first_part + magic_value + inst->TOLL_VIOL)
-			if( nu > denominator*(first_part + magic_value) + inst->TOLL_VIOL)
+
+			if(inst->option==1 || inst->option==3)
 			{
 
-				int nzcnt=inst->n_meta_items+1;
+				///FIRST CUT (UPPER BOUND)
 
-				for (int i = 0; i < inst->n_meta_items; i++)
-				{
-					if(inst->_cut_MOD_OUTER_Y[i]<0.5)
-					{
-						inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_local_rho[i];
-						inst->_cut_MOD_OUTER_rmatind[i]=i;
-					}
-					else
-					{
-						inst->_cut_MOD_OUTER_RHS-=inst->_cut_MOD_OUTER_super_rho[k][i];
-						inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_super_rho[k][i];
-						inst->_cut_MOD_OUTER_rmatind[i]=i;
-					}
-				}
-
-
-				inst->_cut_MOD_OUTER_rmatval[inst->n_meta_items]=1.0/denominator;
-
-				inst->_cut_MOD_OUTER_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
-
-				inst->_cut_MOD_OUTER_RHS += magic_value;
-
-				status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_MOD_OUTER_RHS,'L',inst->_cut_MOD_OUTER_rmatind,inst->_cut_MOD_OUTER_rmatval,0);
-				if(status!=0)
-				{
-					printf("CPXcutcallbackadd\n");
-					exit(-1);
-				}
-
-				inst->n_cuts_MOD_OUTER_1++;
-
-				(*useraction_p)=CPX_CALLBACK_SET;
-			}
-		}
-
-
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		if(inst->option==2 || inst->option==3)
-		{
-
-
-			///SECOND CUT (UPPER BOUND)
-
-			inst->_cut_MOD_OUTER_RHS=first_part;
-
-			for (int i = 0; i < inst->n_meta_items; i++)
-			{
-				if(inst->_cut_MOD_OUTER_Y[i]<0.5)
-				{
-					inst->_cut_MOD_OUTER_local_rho[i]=0;
-				}
-				else
-				{
-					inst->_cut_MOD_OUTER_Y[i]=0.0;
-					inst->_cut_MOD_OUTER_local_rho[i]= first_part - compute_subset_coverage_utility_scenario(inst,inst->_cut_MOD_OUTER_Y,k);
-					inst->_cut_MOD_OUTER_Y[i]=1.0;
-				}
-			}
-
-			if( nu/denominator > first_part + magic_value + inst->TOLL_VIOL)
-			{
-
-				int nzcnt=inst->n_meta_items+1;
+				inst->_cut_MOD_OUTER_RHS=first_part;
 
 				for (int i = 0; i < inst->n_meta_items; i++)
 				{
 					if(inst->_cut_MOD_OUTER_Y[i]>0.5)
 					{
-						inst->_cut_MOD_OUTER_RHS-=inst->_cut_MOD_OUTER_local_rho[i];
-						inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_local_rho[i];
-						inst->_cut_MOD_OUTER_rmatind[i]=i;
+						inst->_cut_MOD_OUTER_local_rho[i]=0;
 					}
 					else
 					{
-						inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_single_rho[k][i];
-						inst->_cut_MOD_OUTER_rmatind[i]=i;
+						inst->_cut_MOD_OUTER_Y[i]=1.0;
+						inst->_cut_MOD_OUTER_local_rho[i]=compute_subset_coverage_utility_scenario(inst,inst->_cut_MOD_OUTER_Y,k)-first_part;
+						inst->_cut_MOD_OUTER_Y[i]=0.0;
 					}
 				}
 
-
-				inst->_cut_MOD_OUTER_rmatval[inst->n_meta_items]=1.0/denominator;
-
-				inst->_cut_MOD_OUTER_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
-
-				inst->_cut_MOD_OUTER_RHS += magic_value;
-
-				status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_MOD_OUTER_RHS,'L',inst->_cut_MOD_OUTER_rmatind,inst->_cut_MOD_OUTER_rmatval,0);
-				if(status!=0)
+				//			if( nu/denominator > first_part + magic_value + inst->TOLL_VIOL)
+				if( nu > denominator*(first_part + magic_value) + inst->TOLL_VIOL)
 				{
-					printf("CPXcutcallbackadd\n");
-					exit(-1);
+
+					int nzcnt=inst->n_meta_items+1;
+
+					for (int i = 0; i < inst->n_meta_items; i++)
+					{
+						if(inst->_cut_MOD_OUTER_Y[i]<0.5)
+						{
+							inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_local_rho[i];
+							inst->_cut_MOD_OUTER_rmatind[i]=i;
+						}
+						else
+						{
+							inst->_cut_MOD_OUTER_RHS-=inst->_cut_MOD_OUTER_super_rho[k][i];
+							inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_super_rho[k][i];
+							inst->_cut_MOD_OUTER_rmatind[i]=i;
+						}
+					}
+
+
+					inst->_cut_MOD_OUTER_rmatval[inst->n_meta_items]=1.0/denominator;
+
+					inst->_cut_MOD_OUTER_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
+
+					inst->_cut_MOD_OUTER_RHS += magic_value;
+
+#ifdef 	DEBUG_CUTS
+					cout << "***MOD_UPPER***\n";
+					for (int i = 0; i < inst->n_meta_items; i++)
+					{
+						cout << "META-ITEM\t" << i << "\t _cut_MOD_OUTER_rmatind \t" << inst->_cut_MOD_OUTER_rmatind[i] << "\t \t"<< inst->_cut_MOD_OUTER_rmatval[i] << endl;
+					}
+					cout << "SCENARIO\t" << k << "\t _cut_MOD_OUTER_rmatind \t" << inst->_cut_MOD_OUTER_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_MOD_OUTER_rmatval[inst->n_meta_items] << endl;
+					cout << "RHS\t" << inst->_cut_MOD_OUTER_RHS << endl;
+					cin.get();
+#endif
+
+					status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_MOD_OUTER_RHS,'L',inst->_cut_MOD_OUTER_rmatind,inst->_cut_MOD_OUTER_rmatval,0);
+					if(status!=0)
+					{
+						printf("CPXcutcallbackadd\n");
+						exit(-1);
+					}
+
+					inst->n_cuts_MOD_OUTER_1++;
+
+					(*useraction_p)=CPX_CALLBACK_SET;
+				}
+			}
+
+
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			if(inst->option==2 || inst->option==3)
+			{
+
+
+				///SECOND CUT (UPPER BOUND)
+
+				inst->_cut_MOD_OUTER_RHS=first_part;
+
+				for (int i = 0; i < inst->n_meta_items; i++)
+				{
+					if(inst->_cut_MOD_OUTER_Y[i]<0.5)
+					{
+						inst->_cut_MOD_OUTER_local_rho[i]=0;
+					}
+					else
+					{
+						inst->_cut_MOD_OUTER_Y[i]=0.0;
+						inst->_cut_MOD_OUTER_local_rho[i]= first_part - compute_subset_coverage_utility_scenario(inst,inst->_cut_MOD_OUTER_Y,k);
+						inst->_cut_MOD_OUTER_Y[i]=1.0;
+					}
 				}
 
-				inst->n_cuts_MOD_OUTER_2++;
+				if( nu/denominator > first_part + magic_value + inst->TOLL_VIOL)
+				{
+
+					int nzcnt=inst->n_meta_items+1;
+
+					for (int i = 0; i < inst->n_meta_items; i++)
+					{
+						if(inst->_cut_MOD_OUTER_Y[i]>0.5)
+						{
+							inst->_cut_MOD_OUTER_RHS-=inst->_cut_MOD_OUTER_local_rho[i];
+							inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_local_rho[i];
+							inst->_cut_MOD_OUTER_rmatind[i]=i;
+						}
+						else
+						{
+							inst->_cut_MOD_OUTER_rmatval[i]=-inst->_cut_MOD_OUTER_single_rho[k][i];
+							inst->_cut_MOD_OUTER_rmatind[i]=i;
+						}
+					}
 
 
-				(*useraction_p)=CPX_CALLBACK_SET;
+					inst->_cut_MOD_OUTER_rmatval[inst->n_meta_items]=1.0/denominator;
+
+					inst->_cut_MOD_OUTER_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
+
+					inst->_cut_MOD_OUTER_RHS += magic_value;
+
+					status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_MOD_OUTER_RHS,'L',inst->_cut_MOD_OUTER_rmatind,inst->_cut_MOD_OUTER_rmatval,0);
+					if(status!=0)
+					{
+						printf("CPXcutcallbackadd\n");
+						exit(-1);
+					}
+
+					inst->n_cuts_MOD_OUTER_2++;
+
+
+					(*useraction_p)=CPX_CALLBACK_SET;
+				}
 			}
 		}
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -343,7 +375,7 @@ void build_model_MOD_OUTER(instance *inst)
 
 	for ( int i = 0; i < inst->m_scenarios; i++)
 	{
-		inst->obj[counter]=1;
+		inst->obj[counter]=1.0;
 		inst->lb[counter]=0.0;
 
 		switch (inst->type_of_zed_function)
@@ -676,6 +708,16 @@ void build_model_MOD_OUTER(instance *inst)
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef print_rho
+	for ( int k = 0; k < inst->m_scenarios; k++ )
+	{
+		cout << "SCENARIO\t" << k << endl;
+		for ( int j = 0; j < inst->n_meta_items; j++)
+		{
+			cout << "META-ITEM\t" << j << "\t single_rho \t"<< inst->_cut_MOD_OUTER_single_rho[k][j] << "\t super_rho \t" << inst->_cut_MOD_OUTER_super_rho[k][j] << endl;
+		}
+	}
+#endif
 
 	cout << "RO COMPUTED\n";
 
