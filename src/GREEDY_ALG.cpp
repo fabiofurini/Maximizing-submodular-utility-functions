@@ -12,8 +12,7 @@ void greedy_algorithm_CARDINALITY(instance *inst)
 
 	clock_t time_start=clock();
 
-	double *CURRENT_SOL=new double[inst->n_meta_items];
-	for ( int j = 0; j < inst->n_meta_items; j++){CURRENT_SOL[j]=0;}
+	for ( int j = 0; j < inst->n_meta_items; j++){inst->GREEDY_SOL[j]=0;}
 
 	cout << "cardinality\t" << inst->cardinality << endl;
 
@@ -32,7 +31,7 @@ void greedy_algorithm_CARDINALITY(instance *inst)
 		int best_j=-1;
 		double best_val=-1;
 
-		double val_1=compute_subset_coverage_utility(inst,CURRENT_SOL);
+		double val_1=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
 		for ( int j = 0; j < inst->n_meta_items; j++)
 		{
@@ -45,7 +44,7 @@ void greedy_algorithm_CARDINALITY(instance *inst)
 				{
 					if(i==j){continue;}
 
-					if(CURRENT_SOL[i]>0.5 && inst->CONF_MATRIX[i][j]==1)
+					if(inst->GREEDY_SOL[i]>0.5 && inst->CONF_MATRIX[i][j]==1)
 					{
 
 						cout << "**CONFLICT**\t" << i << "\t" << j << endl;
@@ -57,14 +56,14 @@ void greedy_algorithm_CARDINALITY(instance *inst)
 			}
 			//////////////////////////////////////////////////////////
 
-			if(CURRENT_SOL[j]<0.5 && OK_CONFLITS)
+			if(inst->GREEDY_SOL[j]<0.5 && OK_CONFLITS)
 			{
 
-				CURRENT_SOL[j]=1;
+				inst->GREEDY_SOL[j]=1;
 
-				double val_2=compute_subset_coverage_utility(inst,CURRENT_SOL);
+				double val_2=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
-				CURRENT_SOL[j]=0;
+				inst->GREEDY_SOL[j]=0;
 
 				//cout << "marginal\t" << (val_2 - val_1)  << endl;
 
@@ -78,11 +77,16 @@ void greedy_algorithm_CARDINALITY(instance *inst)
 			}
 		}
 
-		if(best_j!=-1)
+		if(best_j!=-1 && best_val > 0.0)
 		{
 			cout << "best_j\t" << best_j << "\t" << best_val << endl;
-			CURRENT_SOL[best_j]=1;
+			inst->GREEDY_SOL[best_j]=1;
 			//cin.get();
+		}
+		else
+		{
+			cout << "***NEGATIVE MARGINAL CONTRIBUTION***";
+			break;
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,15 +94,14 @@ void greedy_algorithm_CARDINALITY(instance *inst)
 	int item_counter=0;
 	for ( int j = 0; j < inst->n_meta_items; j++)
 	{
-		cout << "METAITEM\t" << j << "\t->\t"<< CURRENT_SOL[j] << endl;
-		item_counter+=CURRENT_SOL[j];
+		cout << "METAITEM\t" << j << "\t->\t"<< inst->GREEDY_SOL[j] << endl;
+		item_counter+=inst->GREEDY_SOL[j];
 	}
 
-	double val_sol=compute_subset_coverage_utility(inst,CURRENT_SOL);
+	double val_sol=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
 	cout << "val_sol\t" << val_sol << "\t item_counter \t" << item_counter << endl;
 
-	delete []CURRENT_SOL;
 
 	clock_t time_end=clock();
 	double solution_time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
@@ -106,7 +109,7 @@ void greedy_algorithm_CARDINALITY(instance *inst)
 
 	//////////////////////////////////////////////////////////////////////////////////
 	ofstream compact_file;
-	compact_file.open("info_GREEDY_CARDINALITY.txt", ios::app);
+	compact_file.open("info_GREEDY.txt", ios::app);
 	compact_file << fixed
 
 			<<  val_sol << "\t"
@@ -165,8 +168,7 @@ void greedy_algorithm_PARTITION(instance *inst)
 	double *ITEM_ELEMENT=new double[inst->n_element_partition];
 	for ( int j = 0; j < inst->n_element_partition; j++){ITEM_ELEMENT[j]=0;}
 
-	double *CURRENT_SOL=new double[inst->n_meta_items];
-	for ( int j = 0; j < inst->n_meta_items; j++){CURRENT_SOL[j]=0;}
+	for ( int j = 0; j < inst->n_meta_items; j++){inst->GREEDY_SOL[j]=0;}
 
 	int total_budget=inst->budget_per_element*inst->n_element_partition;
 
@@ -188,7 +190,7 @@ void greedy_algorithm_PARTITION(instance *inst)
 		int best_j=-1;
 		double best_val=-1;
 
-		double val_1=compute_subset_coverage_utility(inst,CURRENT_SOL);
+		double val_1=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
 		for ( int j = 0; j < inst->n_meta_items; j++)
 		{
@@ -201,7 +203,7 @@ void greedy_algorithm_PARTITION(instance *inst)
 				{
 					if(i==j){continue;}
 
-					if(CURRENT_SOL[i]>0.5 && inst->CONF_MATRIX[i][j]==1)
+					if(inst->GREEDY_SOL[i]>0.5 && inst->CONF_MATRIX[i][j]==1)
 					{
 
 						cout << "**CONFLICT**\t" << i << "\t" << j << endl;
@@ -222,14 +224,14 @@ void greedy_algorithm_PARTITION(instance *inst)
 			//////////////////////////////////////////////////////////
 
 
-			if(CURRENT_SOL[j]<0.5 && OK_CONFLITS && OK_PARTITION)
+			if(inst->GREEDY_SOL[j]<0.5 && OK_CONFLITS && OK_PARTITION)
 			{
 
-				CURRENT_SOL[j]=1;
+				inst->GREEDY_SOL[j]=1;
 
-				double val_2=compute_subset_coverage_utility(inst,CURRENT_SOL);
+				double val_2=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
-				CURRENT_SOL[j]=0;
+				inst->GREEDY_SOL[j]=0;
 
 				//cout << "marginal\t" << (val_2 - val_1)  << endl;
 
@@ -243,15 +245,20 @@ void greedy_algorithm_PARTITION(instance *inst)
 			}
 		}
 
-		if(best_j!=-1)
+		if(best_j!=-1 && best_val > 0.0)
 		{
 			cout << "best_j\t" << best_j << "\t" << best_val << "\t element \t" << inst->meta_item_element_partition[best_j] << endl;
-			CURRENT_SOL[best_j]=1;
+			inst->GREEDY_SOL[best_j]=1;
 			item_counter++;
 
 			ITEM_ELEMENT[inst->meta_item_element_partition[best_j]]=ITEM_ELEMENT[inst->meta_item_element_partition[best_j]]+1;
 
 			//cin.get();
+		}
+		else
+		{
+			cout << "***NEGATIVE MARGINAL CONTRIBUTION***";
+			break;
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -259,8 +266,8 @@ void greedy_algorithm_PARTITION(instance *inst)
 	item_counter=0;
 	for ( int j = 0; j < inst->n_meta_items; j++)
 	{
-		cout << "METAITEM\t" << j << "\t->\t"<< CURRENT_SOL[j] << endl;
-		item_counter+=CURRENT_SOL[j];
+		cout << "METAITEM\t" << j << "\t->\t"<< inst->GREEDY_SOL[j] << endl;
+		item_counter+=inst->GREEDY_SOL[j];
 	}
 
 	for ( int j = 0; j < inst->n_element_partition; j++)
@@ -268,11 +275,10 @@ void greedy_algorithm_PARTITION(instance *inst)
 		cout << "ELEMENT\t " << j << "\t items \t"<< ITEM_ELEMENT[j] << endl;
 	}
 
-	double val_sol=compute_subset_coverage_utility(inst,CURRENT_SOL);
+	double val_sol=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
 	cout << "val_sol\t" << val_sol << "\t item_counter \t" << item_counter << endl;
 
-	delete []CURRENT_SOL;
 
 	clock_t time_end=clock();
 	double solution_time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
@@ -280,7 +286,7 @@ void greedy_algorithm_PARTITION(instance *inst)
 
 	//////////////////////////////////////////////////////////////////////////////////
 	ofstream compact_file;
-	compact_file.open("info_GREEDY_PARTITION.txt", ios::app);
+	compact_file.open("info_GREEDY.txt", ios::app);
 	compact_file << fixed
 
 			<<  val_sol << "\t"
@@ -339,8 +345,8 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 
 	clock_t time_start=clock();
 
-	double *CURRENT_SOL=new double[inst->n_meta_items];
-	for ( int j = 0; j < inst->n_meta_items; j++){CURRENT_SOL[j]=0;}
+
+	for ( int j = 0; j < inst->n_meta_items; j++){inst->GREEDY_SOL[j]=0;}
 
 	cout << "KP CAPACITY\t" << inst->KP_constraint_CAPACITY << endl;
 
@@ -355,7 +361,7 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 		int best_j=-1;
 		double best_val=-1;
 
-		double val_1=compute_subset_coverage_utility(inst,CURRENT_SOL);
+		double val_1=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
 		for ( int j = 0; j < inst->n_meta_items; j++)
 		{
@@ -368,7 +374,7 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 				{
 					if(i==j){continue;}
 
-					if(CURRENT_SOL[i]>0.5 && inst->CONF_MATRIX[i][j]==1)
+					if(inst->GREEDY_SOL[i]>0.5 && inst->CONF_MATRIX[i][j]==1)
 					{
 
 						cout << "**CONFLICT**\t" << i << "\t" << j << endl;
@@ -389,14 +395,14 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 			}
 			//////////////////////////////////////////////////////////
 
-			if(CURRENT_SOL[j]<0.5 && OK_CONFLITS && OK_KP_CAP)
+			if(inst->GREEDY_SOL[j]<0.5 && OK_CONFLITS && OK_KP_CAP)
 			{
 
-				CURRENT_SOL[j]=1;
+				inst->GREEDY_SOL[j]=1;
 
-				double val_2=compute_subset_coverage_utility(inst,CURRENT_SOL);
+				double val_2=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
-				CURRENT_SOL[j]=0;
+				inst->GREEDY_SOL[j]=0;
 
 				//cout << "marginal\t" << (val_2 - val_1)  << endl;
 
@@ -410,13 +416,17 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 			}
 		}
 
-		if(best_j!=-1)
+		if(best_j!=-1&& best_val > 0.0)
 		{
 			cout << "best_j\t" << best_j << "\t" << best_val << endl;
-			CURRENT_SOL[best_j]=1;
+			inst->GREEDY_SOL[best_j]=1;
 
 			USED_CAPACITY+=inst->KP_constraint_weights[best_j];
-			//cin.get();
+		}
+		else
+		{
+			cout << "***NEGATIVE MARGINAL CONTRIBUTION***";
+			break;
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -424,15 +434,14 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 	int item_counter=0;
 	for ( int j = 0; j < inst->n_meta_items; j++)
 	{
-		cout << "METAITEM\t" << j << "\t->\t"<< CURRENT_SOL[j] << endl;
-		item_counter+=CURRENT_SOL[j];
+		cout << "METAITEM\t" << j << "\t->\t"<< inst->GREEDY_SOL[j] << endl;
+		item_counter+=inst->GREEDY_SOL[j];
 	}
 
-	double val_sol=compute_subset_coverage_utility(inst,CURRENT_SOL);
+	double val_sol=compute_subset_coverage_utility(inst,inst->GREEDY_SOL);
 
 	cout << "val_sol\t" << val_sol << "\t item_counter \t" << item_counter << endl;
 
-	delete []CURRENT_SOL;
 
 	clock_t time_end=clock();
 	double solution_time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
@@ -440,7 +449,7 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 
 	//////////////////////////////////////////////////////////////////////////////////
 	ofstream compact_file;
-	compact_file.open("info_GREEDY_KP.txt", ios::app);
+	compact_file.open("info_GREEDY.txt", ios::app);
 	compact_file << fixed
 
 			<<  val_sol << "\t"

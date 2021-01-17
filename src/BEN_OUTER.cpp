@@ -134,14 +134,14 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 				inst->_cut_BEN_RHS += magic_value;
 
 #ifdef 	DEBUG_CUTS
-		cout << "***MOD_LOWER***\n";
-		for (int i = 0; i < inst->n_meta_items; i++)
-		{
-			cout << "META-ITEM\t" << i << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[i] << "\t \t"<< inst->_cut_BEN_rmatval[i] << endl;
-		}
-		cout << "SCENARIO\t" << k << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_BEN_rmatval[inst->n_meta_items] << endl;
-		cout << "RHS\t" << inst->_cut_BEN_RHS << endl;
-		cin.get();
+				cout << "***MOD_LOWER***\n";
+				for (int i = 0; i < inst->n_meta_items; i++)
+				{
+					cout << "META-ITEM\t" << i << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[i] << "\t \t"<< inst->_cut_BEN_rmatval[i] << endl;
+				}
+				cout << "SCENARIO\t" << k << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_BEN_rmatval[inst->n_meta_items] << endl;
+				cout << "RHS\t" << inst->_cut_BEN_RHS << endl;
+				cin.get();
 #endif
 
 				status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_BEN_RHS,'G',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
@@ -150,7 +150,7 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 					exit(-1);
 				}
 
-//				cout << "MOD_LOWER ADDED CUT\n\n";
+				//				cout << "MOD_LOWER ADDED CUT\n\n";
 				//				cin.get();
 
 				inst->n_cuts_MOD_LOWER++;
@@ -219,14 +219,14 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 				inst->_cut_BEN_RHS+=magic_value;
 
 #ifdef 	DEBUG_CUTS
-		cout << "***BEN_UPPER***\n";
-		for (int i = 0; i < inst->n_meta_items; i++)
-		{
-			cout << "META-ITEM\t" << i << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[i] << "\t \t"<< inst->_cut_BEN_rmatval[i] << endl;
-		}
-		cout << "SCENARIO\t" << k << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_BEN_rmatval[inst->n_meta_items] << endl;
-		cout << "RHS\t" << inst->_cut_BEN_RHS << endl;
-		cin.get();
+				cout << "***BEN_UPPER***\n";
+				for (int i = 0; i < inst->n_meta_items; i++)
+				{
+					cout << "META-ITEM\t" << i << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[i] << "\t \t"<< inst->_cut_BEN_rmatval[i] << endl;
+				}
+				cout << "SCENARIO\t" << k << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_BEN_rmatval[inst->n_meta_items] << endl;
+				cout << "RHS\t" << inst->_cut_BEN_RHS << endl;
+				cin.get();
 #endif
 
 				if(inst->_cut_BEN_Y[inst->n_meta_items+k] > (inst->_cut_BEN_RHS + first_part) + inst->TOLL_VIOL)
@@ -250,8 +250,8 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 					}
 
 
-//					cout << "BEN ADDED CUT\n\n";
-//					cin.get();
+					//					cout << "BEN ADDED CUT\n\n";
+					//					cin.get();
 
 					(*useraction_p)=CPX_CALLBACK_SET;
 
@@ -938,6 +938,59 @@ void solve_model_BEN(instance *inst)
 		}
 
 	}
+
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	if(inst->FLAG_GREEDY_SOL==1)
+	{
+
+		cout << "****INSERT GREEDY SOLUTION***\n";
+
+		if(inst->KP_constraint>0)
+		{
+			greedy_algorithm_KP_CONSTRAINT(inst);
+		}
+
+		if(inst->cardinality!=0 && inst->partition_constraints==0)
+		{
+			greedy_algorithm_CARDINALITY(inst);
+		}
+
+		if(inst->partition_constraints!=0)
+		{
+			greedy_algorithm_PARTITION(inst);
+		}
+
+
+		inst->nzcnt=inst->n_meta_items;
+
+		inst->rmatbeg=(int*) calloc(1,sizeof(int));
+
+		inst->rmatind=(int*) calloc(inst->nzcnt,sizeof(int));
+		inst->rmatval=(double*) calloc(inst->nzcnt,sizeof(double));
+
+
+		for(int j=0; j<inst->n_meta_items; j++)
+		{
+			inst->rmatind[j]=j;
+			inst->rmatval[j]=inst->GREEDY_SOL[j];
+		}
+
+		int effortlevel=3;
+
+		inst->status=CPXaddmipstarts(inst->env_BEN,inst->lp_BEN,1,inst->nzcnt,inst->rmatbeg,inst->rmatind,inst->rmatval, &effortlevel, NULL);
+		if(inst->status!=0) {printf("error in Warm-up\n");exit(-1);}
+
+
+		free (inst->rmatbeg);
+		free (inst->rmatind);
+		free (inst->rmatval);
+
+
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 	cout << "\nCPXmipopt:\n";

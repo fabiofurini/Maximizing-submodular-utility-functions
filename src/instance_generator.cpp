@@ -7,7 +7,7 @@
 
 //#define print_weights
 
-#define CONSTANT_SCALING 1
+
 
 //#define print_neighbourhoods
 
@@ -345,7 +345,7 @@ void load_weights(instance *inst)
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	cout << "compute meta-item profits\n";
 
-	cout << "CONSTANT_SCALING\t" << CONSTANT_SCALING << endl;
+
 	cout << "KP_constraint_R_VALUE\t" << inst->KP_constraint_R_VALUE << endl;
 
 	double *pp=new double [inst->n_meta_items];
@@ -363,7 +363,6 @@ void load_weights(instance *inst)
 				dummy+=inst->a[k][inst->AFS[i]];
 			}
 
-			//			pp[j]+=(1-exp(-dummy/inst->lambda));
 			pp[j]+=dummy;
 
 		}
@@ -400,9 +399,9 @@ void load_weights(instance *inst)
 		for(int i=0; i<inst->n_meta_items; i++)
 		{
 
-			int LB_P= max( 1.0 , (int)(CONSTANT_SCALING*pp[i]) - (inst->KP_constraint_R_VALUE / 10.0) );
+			int LB_P= max( 1.0 , (int)(pp[i]) - (inst->KP_constraint_R_VALUE / 10.0) );
 
-			int UB_P= (int)(CONSTANT_SCALING*pp[i]) + (inst->KP_constraint_R_VALUE / 10.0);
+			int UB_P= (int)(pp[i]) + (inst->KP_constraint_R_VALUE / 10.0);
 
 			inst->KP_constraint_weights[i]=randomBETWEEN(LB_P,UB_P);
 
@@ -418,7 +417,7 @@ void load_weights(instance *inst)
 		for(int i=0; i<inst->n_meta_items; i++)
 		{
 
-			inst->KP_constraint_weights[i] = (int)(CONSTANT_SCALING*pp[i]) + (inst->KP_constraint_R_VALUE / 10);
+			inst->KP_constraint_weights[i] = (int)(pp[i]) + (inst->KP_constraint_R_VALUE / 10);
 
 			sum_weight+=inst->KP_constraint_weights[i];
 		}
@@ -432,9 +431,9 @@ void load_weights(instance *inst)
 		for(int i=0; i<inst->n_meta_items; i++)
 		{
 
-			int LB_P= (int)(CONSTANT_SCALING*pp[i]) + (inst->KP_constraint_R_VALUE / 10.0) - (inst->KP_constraint_R_VALUE / 500.0);
+			int LB_P= (int)(pp[i]) + (inst->KP_constraint_R_VALUE / 10.0) - (inst->KP_constraint_R_VALUE / 500.0);
 
-			int UB_P= (int)(CONSTANT_SCALING*pp[i]) + (inst->KP_constraint_R_VALUE / 10.0) + (inst->KP_constraint_R_VALUE / 500.0);
+			int UB_P= (int)(pp[i]) + (inst->KP_constraint_R_VALUE / 10.0) + (inst->KP_constraint_R_VALUE / 500.0);
 
 			inst->KP_constraint_weights[i] =randomBETWEEN(LB_P,UB_P);
 

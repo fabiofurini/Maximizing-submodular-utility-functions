@@ -59,7 +59,7 @@ typedef struct
 
 	int KP_constraint;//set to > 0 to insert the KP constraint instead of the cardinality constraint
 
-	//the profit for the generation are the marginal contribution to the empty set (global contribution -> rho single)
+	//the profit for the generation are the average (among the scenarios) of marginal contribution to the empty set (rho single) (the marginals are computed per scenarios)
 
 //	1 -> Uncorrelated: w j u.r. in [1, R].
 //	2 -> Weakly correlated:  w j u.r. in [max{1, p j − R/10}, p j + R/10].
@@ -67,7 +67,6 @@ typedef struct
 //	4 -> Almost strongly correlated: w j u.r. in [p j + R/10 − R/500, p j + R/10 + R/500].
 //	5 -> Subset-sum:  w j = p j.
 
-	//the profits are scaled as follow (int)(CONSTANT_SCALING*pp[i])
 
 	int KP_constraint_R_VALUE;
 	double KP_constraint_perc_cap;//it defines the capacity as the percentage of total item weight
@@ -113,6 +112,7 @@ typedef struct
 	double TOLL_DERIVATIVE;
 	double TOLL_VIOL;
 	double TOLL_VIOL_FRAC_BEN;
+	bool FLAG_GREEDY_SOL;//1 for loading the GREEDY SOLUTION
 	//////////////////////////////////////////////////////////////////////
 
 	///////////////////////////////OBJECTIVE FUNCTION AND CONSTRAINTS////////////
@@ -160,6 +160,10 @@ typedef struct
 	bool *item_OK;//boolean vector checking if an item is covered by at least one meta-item
 
 	double *reached_item;//used in the coverage routines
+	////////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////////
+	double *GREEDY_SOL;
 	////////////////////////////////////////////////////////////////////////////////
 
 

@@ -9,6 +9,8 @@
 
 #include "benders_functions.h"
 
+#include "GREEDY_ALG.h"
+
 /*****************************************************************/
 void set_lambda_and_alpha(instance *inst);
 /*****************************************************************/

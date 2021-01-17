@@ -35,7 +35,7 @@ void set_lambda_and_alpha(instance *inst)
 
 	cout << "scale_factor_alpha\t" << inst->scale_factor_alpha << endl;
 
-//	inst->alpha = 1.0 / (inst->scale_factor_alpha * inst->AVERAGE_DEMAND);
+	//	inst->alpha = 1.0 / (inst->scale_factor_alpha * inst->AVERAGE_DEMAND);
 
 	inst->alpha = inst->scale_factor_alpha / (inst->lambda);
 
@@ -237,6 +237,8 @@ void compute_curvature(instance *inst)
 
 			<<  inst->TEST_ID << "\t"
 
+			<<   inst->scale_factor_alpha << "\t"
+
 			<< endl;
 	compact_file.close();
 	//////////////////////////////////////////////////////////////////////////////////
@@ -267,6 +269,9 @@ void read_param_file(instance *inst)
 	in >> DUMMY; in >> inst->TOLL_VIOL;
 
 	in >> DUMMY; in >> inst->TOLL_VIOL_FRAC_BEN;
+
+	in >> DUMMY; in >> inst->FLAG_GREEDY_SOL;
+
 
 
 	in.close();
@@ -342,6 +347,8 @@ void init_data(instance *inst)
 
 	inst->meta_item_element_partition=new int[inst->n_meta_items];
 
+	inst->GREEDY_SOL=new double[inst->n_meta_items];
+
 }
 
 /*****************************************************************/
@@ -351,6 +358,8 @@ void free_data(instance *inst)
 
 
 	cout << "FREEEEE\n\n";
+
+	delete []inst->GREEDY_SOL;
 
 	delete []inst->KP_constraint_weights;
 

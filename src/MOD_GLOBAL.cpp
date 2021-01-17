@@ -725,6 +725,60 @@ void solve_model_MOD(instance *inst)
 
 	CPXsetdblparam(inst->env_MOD,CPX_PARAM_TRELIM,6000);
 
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	if(inst->FLAG_GREEDY_SOL==1)
+	{
+
+		cout << "****INSERT GREEDY SOLUTION***\n";
+
+		if(inst->KP_constraint>0)
+		{
+			greedy_algorithm_KP_CONSTRAINT(inst);
+		}
+
+		if(inst->cardinality!=0 && inst->partition_constraints==0)
+		{
+			greedy_algorithm_CARDINALITY(inst);
+		}
+
+		if(inst->partition_constraints!=0)
+		{
+			greedy_algorithm_PARTITION(inst);
+		}
+
+
+		inst->nzcnt=inst->n_meta_items;
+
+		inst->rmatbeg=(int*) calloc(1,sizeof(int));
+
+		inst->rmatind=(int*) calloc(inst->nzcnt,sizeof(int));
+		inst->rmatval=(double*) calloc(inst->nzcnt,sizeof(double));
+
+
+		for(int j=0; j<inst->n_meta_items; j++)
+		{
+			inst->rmatind[j]=j;
+			inst->rmatval[j]=inst->GREEDY_SOL[j];
+		}
+
+		int effortlevel=3;
+
+		inst->status=CPXaddmipstarts(inst->env_MOD,inst->lp_MOD,1,inst->nzcnt,inst->rmatbeg,inst->rmatind,inst->rmatval, &effortlevel, NULL);
+		if(inst->status!=0) {printf("error in Warm-up\n");exit(-1);}
+
+
+		free (inst->rmatbeg);
+		free (inst->rmatind);
+		free (inst->rmatval);
+
+
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 	cout << "\nCPXmipopt:\n";
 	inst->status=CPXmipopt(inst->env_MOD,inst->lp_MOD);
 	if(inst->status!=0)

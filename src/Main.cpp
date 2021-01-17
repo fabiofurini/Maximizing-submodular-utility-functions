@@ -208,6 +208,7 @@ int main(int argc, char** argv)
 	cout << "TOLL_DERIVATIVE\t" << setprecision(9) << setw(9) << inst.TOLL_DERIVATIVE << endl;
 	cout << "TOLL_VIOL\t" << setprecision(9) << setw(9) << inst.TOLL_VIOL   << endl;
 	cout << "TOLL_VIOL_FRAC_BEN\t" << setprecision(9) << setw(9)  << inst.TOLL_VIOL_FRAC_BEN << endl;
+	cout << "FLAG_GREEDY_SOLs\t" << inst.FLAG_GREEDY_SOL << endl;
 	cout << "*****************************\n";
 	////////////////////////////////////////////////////////////////////////////////////////
 
