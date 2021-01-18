@@ -43,6 +43,48 @@ void set_lambda_and_alpha(instance *inst)
 }
 
 /*****************************************************************/
+void scale_obj_coefficient(instance *inst)
+/*****************************************************************/
+{
+	double D_tot=0.0;
+
+	for ( int i = 0; i < inst->m_scenarios; i++)
+	{
+		double D=0.0;
+
+		for(int j=0;j<inst->n_items;j++)
+		{
+			D+=inst->a[i][j];
+		}
+
+		cout << "scenario\t" << i << "\t total demand\t" << D << "\t total \t" << D_tot << endl;
+
+		D_tot+=D;
+	}
+
+	inst->AVERAGE_DEMAND=(double) D_tot / (double)inst->m_scenarios;
+
+	cout << fixed << "average demand\t" << (double) D_tot / (double)inst->m_scenarios << endl;
+
+	for ( int i = 0; i < inst->m_scenarios; i++)
+	{
+
+		for(int j=0;j<inst->n_items;j++)
+		{
+			inst->a[i][j]=inst->a[i][j]/inst->AVERAGE_DEMAND;
+		}
+
+	}
+
+
+
+	inst->lambda_orig=inst->lambda;
+
+	inst->alpha = inst->scale_factor_alpha/(inst->lambda);
+
+}
+
+/*****************************************************************/
 void compute_curvature(instance *inst)
 /*****************************************************************/
 {

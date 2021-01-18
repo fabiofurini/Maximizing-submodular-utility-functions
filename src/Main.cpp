@@ -243,7 +243,8 @@ int main(int argc, char** argv)
 	//////////////////////////////////////
 	if(inst.FLAG_INSTANCE_LOCATION==true ||inst.FLAG_INSTANCE_WORST_CASE==true)
 	{
-		set_lambda_and_alpha(&inst);
+		//set_lambda_and_alpha(&inst);
+		scale_obj_coefficient(&inst);
 	}
 	else
 	{
