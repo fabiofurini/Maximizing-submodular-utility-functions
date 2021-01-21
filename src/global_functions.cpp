@@ -381,7 +381,7 @@ void init_data(instance *inst)
 {
 
 
-	inst->KP_constraint_CAPACITY=-1;
+	inst->KP_constraint_CAPACITY=0;
 
 	inst->KP_constraint_weights=new double[inst->n_meta_items];
 

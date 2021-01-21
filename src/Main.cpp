@@ -20,7 +20,7 @@
 #include "instance_reader.h"
 #include "instance_generator.h"
 
-//#define COMPUTE_CORVATURE
+//#define COMPUTE_CURVATURE
 
 /***************************************************************************/
 int main(int argc, char** argv)
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 	//	exit(-1);
 
 	/////////////////////////////////
-#ifdef COMPUTE_CORVATURE
+#ifdef COMPUTE_CURVATURE
 	compute_curvature(&inst);
 	exit(-1);
 #endif
@@ -270,11 +270,11 @@ int main(int argc, char** argv)
 	if(inst.algorithm==1)
 	{
 
-		if(inst.FLAG_INSTANCE_LOCATION==true || inst.FLAG_INSTANCE_WORST_CASE==true)
+		if(inst.FLAG_INSTANCE_LOCATION==true || inst.FLAG_INSTANCE_WORST_CASE==true || inst.FLAG_INSTANCE_MP==true)
 		{
 			cout << "\n\n----------->>>>>>GREEDY\n";
 
-			if(inst.KP_constraint>0)
+			if(inst.KP_constraint>0 || inst.FLAG_INSTANCE_MP)
 			{
 				greedy_algorithm_KP_CONSTRAINT(&inst);
 			}
