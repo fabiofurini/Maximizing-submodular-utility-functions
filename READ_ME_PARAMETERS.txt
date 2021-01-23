@@ -20,7 +20,7 @@ FLAG_GREEDY_SOL -> if 1 it loads the greedy solution to initialize the models
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 3: ''algorithm''
 
-it is the algorithm, we have 4 algorithms,
+it is the type of model used, we have 4 branch-and-cut algorithms,
 
 11 -> submodular cuts on the entire objective function 
 12 -> submodular cuts per scenario 
