@@ -8,9 +8,7 @@
 #include "MOD_GLOBAL.h"
 #include "MOD_OUTER.h"
 #include "MOD_LOCAL.h"
-
 #include "BEN_OUTER.h"
-
 
 #include "global_functions.h"
 #include "global_variables.h"
@@ -55,21 +53,21 @@ int main(int argc, char** argv)
 		/*Param17*/inst.distribute_a=atoi(argv[17]);
 
 
-		/*Param17*/inst.KP_constraint=atoi(argv[18]);;
-		/*Param18*/inst.KP_constraint_R_VALUE=atoi(argv[19]);;
-		/*Param19*/inst.KP_constraint_perc_cap=atof(argv[20]);;
+		/*Param18*/inst.KP_constraint=atoi(argv[18]);;
+		/*Param19*/inst.KP_constraint_R_VALUE=atoi(argv[19]);;
+		/*Param20*/inst.KP_constraint_perc_cap=atof(argv[20]);;
 
-		/*Param20*/inst.USE_WORST_CASE_INSTANCE=atoi(argv[21]);;
-		/*Param21*/inst.type_of_zed_function=atoi(argv[22]);;
+		/*Param21*/inst.USE_WORST_CASE_INSTANCE=atoi(argv[21]);;
+		/*Param22*/inst.type_of_zed_function=atoi(argv[22]);;
 
 
-		/*Param22*/inst.partition_constraints=atoi(argv[23]);;
-		/*Param23*/inst.meta_item_per_element=atoi(argv[24]);;
-		/*Param24*/inst.budget_per_element=atoi(argv[25]);;
+		/*Param23*/inst.partition_constraints=atoi(argv[23]);;
+		/*Param24*/inst.meta_item_per_element=atoi(argv[24]);;
+		/*Param25*/inst.budget_per_element=atoi(argv[25]);;
 
-		/*Param25*/inst.TEST_ID=atoi(argv[26]);;
+		/*Param26*/inst.TEST_ID=atoi(argv[26]);;
 
-		/*Param26*/inst.scale_factor_alpha=atof(argv[27]);;
+		/*Param27*/inst.scale_factor_alpha=atof(argv[27]);;
 
 
 		srand(inst.seed);
@@ -245,6 +243,7 @@ int main(int argc, char** argv)
 	{
 		//set_lambda_and_alpha(&inst);
 		scale_obj_coefficient(&inst);
+		set_alpha(&inst);
 	}
 	else
 	{
