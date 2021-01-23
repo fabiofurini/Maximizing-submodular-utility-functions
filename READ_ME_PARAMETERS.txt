@@ -15,7 +15,7 @@ number_of_CPU 1
 TOLL_DERIVATIVE  -> it determines the tolerance in which the derivative is considered 0 (default 1e-12) 
 TOLL_VIOL  -> it determines if a cut (on integer point) is considered violated (default 10e-10) 
 TOLL_VIOL_FRAC_BEN  -> this is the violation of the fractional benders cuts (default 10e-6)
-FLAG_GREEDY_SOL -> if 1 it load the greedy solution to initialize the models
+FLAG_GREEDY_SOL -> if 1 it loads the greedy solution to initialize the models
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 3: ''algorithm''
