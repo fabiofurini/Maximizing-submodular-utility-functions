@@ -133,6 +133,11 @@ it is used to determine the KP constraints as the sum of all item weight multipl
 
 it can be set to 1 to use the lambda based utility function, if set to 2 the code use the identity function, set to  to use the non monotone utility function
 
+//set to 1 -> f(x) = 1 - exp( - x / lambda) 
+//set to 2 -> only the set union operator
+//set to 3 -> f(x) = 1 - exp( - x / lambda) - ( alpha ) * x
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 22,23 and 24: ''partition_constraints'', ''meta_item_per_element'' and ''budget_per_element''
 
@@ -149,3 +154,5 @@ it  is the test ID
 ***Parameter 27: ''scale_factor_alpha''
 
 it is the scale factor for alpha (used when type_of_zed_function =3)
+
+alpha = scale_factor_alpha / lambda
