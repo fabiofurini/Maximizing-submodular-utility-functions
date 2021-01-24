@@ -11,7 +11,7 @@ it is the instance file, we have two modes. The code can read an instance or we 
 
 it is a parameter file in which we have the following parameters:
 
-number_of_CPU 1 
+number_of_CPU -> it determines the number of CPU used by cplex (default 1)
 TOLL_DERIVATIVE  -> it determines the tolerance in which the derivative is considered 0 (default 1e-12) 
 TOLL_VIOL  -> it determines if a cut (on integer point) is considered violated (default 10e-10) 
 TOLL_VIOL_FRAC_BEN  -> this is the violation of the fractional benders cuts (default 10e-6)
