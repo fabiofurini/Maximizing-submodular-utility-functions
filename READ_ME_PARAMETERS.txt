@@ -64,7 +64,8 @@ the number of meta items.
 
 the covering radius.
 
-The items and the meta items are randomly sampled in a square of value 30. Then the covering radius determines the items that are covered by the meta items, i.e. if the euclidean distance is smaller than the covering radius.
+The items and the meta items are randomly sampled in a square of value 30. Then the covering radius determines the items that are covered by the meta items, 
+i.e. if the euclidean distance is smaller than the covering radius.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 11: ''seed''
@@ -84,17 +85,20 @@ it is the probability of an item to be in a scenario
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 14: ''cardinality''
 
-it is the RHS value of the cardinality constraint (0 for the other type of constraints)
+it is the RHS value of the cardinality constraint (0 for the other types of constraints)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 15: ''conflict_perc''
 
-it determines the probability of having a conflict between pairs of meta items (for each conflict the code adds to the models a conflict constraints)
+it determines the probability of having a conflict between pairs of meta items (for each conflict, the code adds to the models a conflict constraints)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameters 16 and 17: ''value_a'' and ''distribute_a''
 
-it determines the value of the a_{ij} (or its upper bound). It works combined with parameter 17. In case distribute_a is set to 0 then it works as before, i.e., it sets a_{ij} to value_a in all the scenarios in which the item is present according to the parameter on the probability of an item being in a scenario. Instead if distribute_a is set to 1, a_{ij} is randomly chosen in the interval [1,value_a] and integer. Clearly the probability of an item being in a scenario also set to zero some of the a_{ij}.
+it determines the value of the objective function coefficients a_{ij} (or its upper bound). It works combined with parameter 17. In case distribute_a is set to 0, 
+then it sets a_{ij} to ''value_a'' in all scenarios in which the item is present (according to the parameter on the probability of an item being in a scenario). 
+Instead,  if ''distribute_a'' is set to 1, a_{ij} is randomly chosen in the interval [1,value_a] and integer (or always to 0 accordiing to the probability of an 
+item being in a scenario).
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,25 +117,25 @@ Its value determines the way the weights of the meta-items are determined, we ha
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***parameter 19: ''KP_constraint_R_VALUE''
 
-it is the value of R used above.
+it is the value of R used above for the KP constraint.
 
 As profits of the meta-items, the code uses the average total demand covered (averaged over the scenarios).
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***parameter 20: ''KP_constraint_perc_cap''
 
-it is used to determine the KP constraints as the sum of all item weight multiplied by  KP_constraint_perc_cap/100
+it is used to determine the KP constraint capacity, as the sum of all item weight multiplied by KP_constraint_perc_cap/100
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 21: ''USE_WORST_CASE_INSTANCE''
 
- if it is set to 1 generate and use the worst case instances, the only input parameter of these instances is the cardinality
+if it is set to 1 generate and use the worst case instances, the only input parameter of these instances is the cardinality
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 22: ''type_of_zed_function''
 
-it can be set to 1 to use the lambda based utility function, if set to 2 the code use the identity function, set to  to use the non monotone utility function
+it can be set to 1 to use the lambda-based utility function, if set to 2 the code use the identity function, set to two to use the non-monotone utility function
 
 //set to 1 -> f(x) = 1 - exp( - x / lambda) 
 //set to 2 -> only the set union operator
@@ -142,8 +146,10 @@ it can be set to 1 to use the lambda based utility function, if set to 2 the cod
 ***Parameter 22,23 and 24: ''partition_constraints'', ''meta_item_per_element'' and ''budget_per_element''
 
 
-Parameters 22,23 and 24 determine the partition constraints, parameter 22 must be set to 1 to use them instead of the simple cardinality constraint. Then parameter 23 determines the number of meta items per element of the partition (the items are taken in order). 
-Finally parameter 24 is the budget, i.e., the rhs of each constraint. So the number of elements in the partition is determined by the number of meta items divided by meta_item_per_element. If the number of meta item is not a multiple of meta_item_per_element the code exits
+Parameters 22,23 and 24 determine the partition constraints, parameter 22 must be set to 1 to use them instead of the simple cardinality constraint. Then 
+parameter 23 determines the number of meta items per element of the partition (the items are taken in order). 
+Finally parameter 24 is the budget, i.e., the rhs of each constraint. So the number of elements in the partition is determined by the number of meta items divided 
+by meta_item_per_element. If the number of meta item is not a multiple of meta_item_per_element the code exits
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ***Parameter 26: ''TEST_ID''
