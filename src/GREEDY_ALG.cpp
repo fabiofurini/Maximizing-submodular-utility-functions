@@ -348,9 +348,16 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 
 	for ( int j = 0; j < inst->n_meta_items; j++){inst->GREEDY_SOL[j]=0;}
 
-	cout << "KP CAPACITY\t" << inst->KP_constraint_CAPACITY << endl;
+	if(inst->FLAG_INSTANCE_MP)
+	{
+		cout << "KP CAPACITY (MP INSTANCES)\t" << 1 << endl;
+	}
+	else
+	{
+		cout << "KP CAPACITY\t" << inst->KP_constraint_CAPACITY << endl;
+	}
 
-	int USED_CAPACITY=0;
+	double USED_CAPACITY=0;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	for ( int k = 0; k < inst->n_meta_items; k++)
@@ -389,9 +396,20 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 			//////////////////////////////////////////////////////////
 			bool OK_KP_CAP=true;
 
-			if( (inst->KP_constraint_weights[j] + USED_CAPACITY ) > inst->KP_constraint_CAPACITY)
+			if(inst->FLAG_INSTANCE_MP)
 			{
-				OK_KP_CAP=false;
+				if( (inst->weight_item_MP[j] + USED_CAPACITY ) > 1)
+				{
+					OK_KP_CAP=false;
+				}
+
+			}
+			else
+			{
+				if( (inst->KP_constraint_weights[j] + USED_CAPACITY ) > inst->KP_constraint_CAPACITY)
+				{
+					OK_KP_CAP=false;
+				}
 			}
 			//////////////////////////////////////////////////////////
 
@@ -421,7 +439,15 @@ void greedy_algorithm_KP_CONSTRAINT(instance *inst)
 			cout << "best_j\t" << best_j << "\t" << best_val << endl;
 			inst->GREEDY_SOL[best_j]=1;
 
-			USED_CAPACITY+=inst->KP_constraint_weights[best_j];
+			if(inst->FLAG_INSTANCE_MP)
+			{
+				USED_CAPACITY+=inst->weight_item_MP[best_j];
+
+			}
+			else
+			{
+				USED_CAPACITY+=inst->KP_constraint_weights[best_j];
+			}
 		}
 		else
 		{

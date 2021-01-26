@@ -826,7 +826,7 @@ void solve_model_MOD_OUTER(instance *inst)
 
 		cout << "****INSERT GREEDY SOLUTION***\n";
 
-		if(inst->KP_constraint>0)
+		if(inst->KP_constraint>0 || inst->FLAG_INSTANCE_MP)
 		{
 			greedy_algorithm_KP_CONSTRAINT(inst);
 		}

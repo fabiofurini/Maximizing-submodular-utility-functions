@@ -77,11 +77,16 @@ void scale_obj_coefficient(instance *inst)
 	}
 
 
+}
 
+
+/*****************************************************************/
+void set_alpha(instance *inst)
+/*****************************************************************/
+{
 	inst->lambda_orig=inst->lambda;
 
 	inst->alpha = inst->scale_factor_alpha/(inst->lambda);
-
 }
 
 /*****************************************************************/
@@ -381,7 +386,7 @@ void init_data(instance *inst)
 {
 
 
-	inst->KP_constraint_CAPACITY=-1;
+	inst->KP_constraint_CAPACITY=0;
 
 	inst->KP_constraint_weights=new double[inst->n_meta_items];
 
