@@ -19,7 +19,7 @@
 #include "instance_generator.h"
 
 //#define COMPUTE_CURVATURE
-//#define SOLVE_LP
+#define SOLVE_LP
 
 /***************************************************************************/
 int main(int argc, char** argv)
@@ -352,10 +352,12 @@ int main(int argc, char** argv)
 
 		///////////////////////////
 
+		build_model_BEN(&inst);
+
 #ifdef SOLVE_LP
 		solve_model_BEN_LP(&inst);
 #else
-		build_model_BEN(&inst);
+		solve_model_BEN(&inst);
 #endif
 		clean_model_BEN(&inst);
 		///////////////////////////
