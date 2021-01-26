@@ -843,8 +843,6 @@ void solve_model_BEN(instance *inst)
 {
 
 
-
-
 	CPXsetintparam (inst->env_BEN, CPX_PARAM_SCRIND, CPX_ON);
 
 
@@ -884,14 +882,14 @@ void solve_model_BEN(instance *inst)
 	inst->status = CPXsetintparam (inst->env_BEN, CPX_PARAM_THREADS, inst->number_of_CPU);
 	if (inst->status)
 	{
-		printf ("error for CPX_PARAM_EPRHS\n");
+		printf ("error for CPX_PARAM_THREADS\n");
 	}
 
 	// * Set time limit *
 	inst->status = CPXsetdblparam (inst->env_BEN, CPX_PARAM_TILIM,inst->timelimit);
 	if (inst->status)
 	{
-		printf ("error for CPX_PARAM_EPRHS\n");
+		printf ("error for CPX_PARAM_TILIM\n");
 	}
 
 
@@ -900,7 +898,7 @@ void solve_model_BEN(instance *inst)
 	clock_t time_start=clock();
 
 
-	CPXsetintparam(inst->env_BEN, CPX_PARAM_MIPCBREDLP, CPX_OFF);        // let MIP callbacks work on the original model
+	CPXsetintparam(inst->env_BEN, CPX_PARAM_MIPCBREDLP, CPX_OFF);        // MIP callbacks work on the original model
 	CPXsetintparam(inst->env_BEN, CPX_PARAM_PRELINEAR, CPX_OFF);              // assure linear mappings between the presolved and original models
 	CPXsetintparam(inst->env_BEN, CPX_PARAM_REDUCE, CPX_PREREDUCE_PRIMALONLY);
 
@@ -1301,10 +1299,260 @@ void solve_model_BEN(instance *inst)
 #endif
 
 
-
-
 	free(inst->x);
 
+}
+
+
+/*****************************************************************/
+void solve_model_BEN_LP(instance *inst)
+/*****************************************************************/
+{
+
+
+	CPXsetintparam (inst->env_BEN, CPX_PARAM_SCRIND, CPX_OFF);
+
+
+	// * Set a tolerance *
+	inst->status = CPXsetdblparam (inst->env_BEN, CPX_PARAM_EPGAP, inst->TOLL_OPTIMALITY);
+	if (inst->status)
+	{
+		printf ("error for CPX_PARAM_EPGAP\n");
+	}
+
+	// * Set Feasibility tolerance *
+	inst->status = CPXsetdblparam (inst->env_BEN, CPX_PARAM_EPRHS, 1e-9);
+	if (inst->status)
+	{
+		printf ("error for CPX_PARAM_EPRHS\n");
+	}
+
+	// * Set number of CPU*
+	inst->status = CPXsetintparam (inst->env_BEN, CPX_PARAM_THREADS, inst->number_of_CPU);
+	if (inst->status)
+	{
+		printf ("error for CPX_PARAM_THREADS\n");
+	}
+
+	// * Set time limit *
+	inst->status = CPXsetdblparam (inst->env_BEN, CPX_PARAM_TILIM,inst->timelimit);
+	if (inst->status)
+	{
+		printf ("error for CPX_PARAM_TILIM\n");
+	}
+
+
+	int option_val=inst->option;
+
+	if(inst->option<0)
+	{
+		inst->option=abs(inst->option);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////
+	// * solving the LP model
+	clock_t time_start=clock();
+
+
+	inst->status = CPXchgprobtype(inst->env_BEN,inst->lp_BEN,CPXPROB_LP);
+	if (inst->status)
+	{
+		printf ("error for CPXchgprobtype\n");
+	}
+
+	while(1)
+	{
+
+		inst->status=CPXlpopt(inst->env_BEN,inst->lp_BEN);
+		if(inst->status!=0)
+		{
+			printf("error in CPXlpopt\n");
+			exit(-1);
+		}
+
+		inst->objval=-1;
+		inst->status=CPXgetobjval(inst->env_BEN,inst->lp_BEN,&(inst->objval));
+		if(inst->status!=0)
+		{
+			printf("error in CPXgetmipobjval\n");
+			exit(-1);
+		}
+		cout << fixed << "\n***objval:\t" << inst->objval << endl;
+
+		int num_variables=inst->n_meta_items+inst->m_scenarios;
+		int status;
+
+
+		status=CPXgetx(inst->env_BEN,inst->lp_BEN,inst->_cut_BEN_Y,0,num_variables-1);
+		if(status!=0)
+		{
+			printf("cannot get the x\n");
+			exit(-1);
+		}
+
+		load_I_TILDE(inst,false,inst->I_TILDE_BEN,inst->_cut_BEN_Y);
+
+		bool CUT_FOUND=false;
+
+		//////////////////////////////////////////////////////////////////
+		for (int k = 0; k < inst->m_scenarios; k++)
+		{
+
+			double  punto=compute_subset_coverage_utility_scenario_fract(inst,inst->_cut_BEN_Y,k);
+
+			double denominator=compute_val_diff(inst,punto);
+
+			//the fractional cuts are valid only if the derivative is positive
+			if(denominator<= 0.0 )
+			{
+				cout << "LP SOLUTION NEGATIVE DERIVATIVE (solve_model_BEN_LP)\n\n";
+				exit(-1);
+			}
+
+			if(denominator>inst->TOLL_DERIVATIVE)
+			{
+
+				double magic_value= (compute_val_funct(inst,punto) - compute_val_diff(inst,punto) * punto) ;
+
+
+				for (int llll = 0; llll < 2; llll++)
+				{
+
+					if(inst->option==1 && llll==1){continue;}
+					if(inst->option==2 && llll==0){continue;}
+
+					if(llll ==0)
+					{
+						comb_solve_model_BEN_AUX_1(inst,inst->I_TILDE_BEN,inst->AUX_SOL_BEN,k);
+					}
+
+					if(llll ==1)
+					{
+						comb_solve_model_BEN_AUX_2(inst,inst->I_TILDE_BEN,inst->AUX_SOL_BEN,k);
+					}
+
+					int nzcnt=inst->n_meta_items+1;
+					double first_part=0;
+
+					inst->_cut_BEN_RHS=0.0;
+
+					for ( int j = 0; j < inst->n_items; j++)
+					{
+						inst->_cut_BEN_RHS +=	inst->AUX_SOL_BEN[inst->n_items+j];
+					}
+
+					for (int i = 0; i <inst->n_meta_items; i++)
+					{
+
+						inst->_cut_BEN_rmatval[i]=0.0;
+
+						for (int  k = inst->NFS[i]; k < inst->NFS[i+1]; k++ )
+						{
+							inst->_cut_BEN_rmatval[i] -= (inst->AUX_SOL_BEN[inst->AFS[k]]*denominator);
+						}
+
+						first_part -= (inst->_cut_BEN_rmatval[i] *inst->_cut_BEN_Y[i]);
+
+						inst->_cut_BEN_rmatind[i]=i;
+					}
+
+					inst->_cut_BEN_rmatval[inst->n_meta_items]=1.0;
+
+					inst->_cut_BEN_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
+
+					inst->_cut_BEN_RHS*=denominator;
+
+					inst->_cut_BEN_RHS+=magic_value;
+
+					if(inst->_cut_BEN_Y[inst->n_meta_items+k] > (inst->_cut_BEN_RHS + first_part) + inst->TOLL_VIOL_FRAC_BEN)
+					{
+
+						int rmatbeg=0;
+						char sense='L';
+
+						inst->status=CPXaddrows(inst->env_BEN,inst->lp_BEN,0,1,nzcnt,&inst->_cut_BEN_RHS,&sense,&rmatbeg,inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,NULL,NULL);
+						if(inst->status!=0)
+						{
+							printf("CPXaddrows\n");
+							exit(-1);
+						}
+
+						CUT_FOUND=true;
+
+						if(llll ==0)
+						{
+							inst->n_cuts_BEN_FRAC_1++;
+						}
+
+						if(llll ==1)
+						{
+							inst->n_cuts_BEN_FRAC_2++;
+						}
+					}
+				}
+			}
+		}
+		//////////////////////////////////////////////////////////////////
+
+		if(!CUT_FOUND)
+		{
+			break;
+		}
+
+	}
+
+	clock_t time_end=clock();
+	double solution_time=(double)(time_end-time_start)/(double)CLOCKS_PER_SEC;
+	///////////////////////////////////////////////////////////////////////////////////
+
+
+
+//	inst->objval=-1;
+//	inst->status=CPXgetobjval(inst->env_BEN,inst->lp_BEN,&(inst->objval));
+//	if(inst->status!=0)
+//	{
+//		printf("error in CPXgetmipobjval\n");
+//	}
+//
+//
+//	cout << fixed << "\n***objval:\t" << inst->objval << endl;
+
+
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	int cur_numcols=CPXgetnumcols(inst->env_BEN,inst->lp_BEN);
+	int cur_numrows=CPXgetnumrows(inst->env_BEN,inst->lp_BEN);
+
+	cout <<"n_cuts_BEN_1\t" <<  inst->n_cuts_BEN_1 << "\n";
+	cout <<"n_cuts_BEN_FRAC_1\t"<<  inst->n_cuts_BEN_FRAC_1 << "\n";
+	cout <<"n_cuts_BEN_2\t" <<  inst->n_cuts_BEN_2 << "\n";
+	cout <<"n_cuts_BEN_FRAC_2\t"<<  inst->n_cuts_BEN_FRAC_2 << "\n";
+
+	cout <<"n_cuts_MOD_LOWER\t"<<  inst->n_cuts_MOD_LOWER << "\n";
+
+
+	//////////////////////////////////////////////////////////////////////////////////
+	ofstream compact_file;
+	compact_file.open("info_EXTENSIVE_LP.txt", ios::app);
+	compact_file << fixed
+
+
+			<<  inst->objval<< "\t"
+			<<   solution_time << "\t"
+
+			<<  inst->n_cuts_BEN_1 << "\t"
+			<<  inst->n_cuts_BEN_FRAC_1 << "\t"
+			<<  inst->n_cuts_BEN_2 << "\t"
+			<<  inst->n_cuts_BEN_FRAC_2 << "\t"
+
+			<<  inst->n_cuts_MOD_LOWER << "\t"
+
+			<<  inst->TEST_ID << "\t"
+
+			<< endl;
+	compact_file.close();
+	//////////////////////////////////////////////////////////////////////////////////
 
 }
 
@@ -1337,3 +1585,7 @@ void clean_model_BEN(instance *inst)
 	delete[]inst->_cut_BEN_single_rho;
 
 }
+
+
+
+
