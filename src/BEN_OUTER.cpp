@@ -1506,17 +1506,7 @@ void solve_model_BEN_LP(instance *inst)
 	///////////////////////////////////////////////////////////////////////////////////
 
 
-
-//	inst->objval=-1;
-//	inst->status=CPXgetobjval(inst->env_BEN,inst->lp_BEN,&(inst->objval));
-//	if(inst->status!=0)
-//	{
-//		printf("error in CPXgetmipobjval\n");
-//	}
-//
-//
-//	cout << fixed << "\n***objval:\t" << inst->objval << endl;
-
+	inst->lpstat=CPXgetstat(inst->env_BEN,inst->lp_BEN);
 
 
 	///////////////////////////////////////////////////////////////////////////////////
@@ -1547,6 +1537,8 @@ void solve_model_BEN_LP(instance *inst)
 			<<  inst->n_cuts_BEN_FRAC_2 << "\t"
 
 			<<  inst->n_cuts_MOD_LOWER << "\t"
+
+			<<  inst->lpstat << "\t"
 
 			<<  inst->TEST_ID << "\t"
 

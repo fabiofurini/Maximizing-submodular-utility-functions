@@ -19,7 +19,7 @@
 #include "instance_generator.h"
 
 //#define COMPUTE_CURVATURE
-#define SOLVE_LP
+//#define SOLVE_LP
 
 /***************************************************************************/
 int main(int argc, char** argv)
@@ -228,8 +228,6 @@ int main(int argc, char** argv)
 	}
 	///////////////////////////////////////
 
-
-
 	///////////////////////////////////////
 	if(inst.partition_constraints>0)
 	{
@@ -238,6 +236,7 @@ int main(int argc, char** argv)
 	}
 	///////////////////////////////////////
 
+	inst.lambda_orig=inst.lambda;
 
 	//////////////////////////////////////
 	if(inst.FLAG_INSTANCE_LOCATION==true ||inst.FLAG_INSTANCE_WORST_CASE==true)
