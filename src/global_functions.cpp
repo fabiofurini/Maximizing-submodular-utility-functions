@@ -3,6 +3,18 @@
 #include "global_functions.h"
 
 
+
+/***********************************************************************************/
+int compare(const void *p, const void *q)
+/***********************************************************************************/
+{
+	//SORT BY NON INCREASING SCORES
+	double l = ((struct valuesSTR *)p)->score;
+	double r = ((struct valuesSTR *)q)->score;
+	return ((l < r)  ? 1:-1);
+}
+
+
 /*****************************************************************/
 void set_lambda_and_alpha(instance *inst)
 /*****************************************************************/
@@ -319,6 +331,13 @@ void read_param_file(instance *inst)
 	in >> DUMMY; in >> inst->FLAG_GREEDY_SOL;
 
 
+	in >> DUMMY; in >> inst->USE_POLY_MATROID_CUT;
+	in >> DUMMY; in >> inst->USE_POLY_MATROID_CUT_FRACT;
+	in >> DUMMY; in >> inst->USE_MOD_LOWER;
+	in >> DUMMY; in >> inst->TOLL_VIOL_FRAC_POLY;
+	in >> DUMMY; in >> inst->MAX_CUT_FRAC_POLY;
+	in >> DUMMY; in >> inst->USE_POLY_MATROID_CUT_FRACT_ONLY_ROOT;
+
 
 	in.close();
 
@@ -395,6 +414,10 @@ void init_data(instance *inst)
 
 	inst->GREEDY_SOL=new double[inst->n_meta_items];
 
+	inst->data_cut=new valuesSTR[inst->n_meta_items];
+
+	inst->set_cut=new double[inst->n_meta_items];
+
 }
 
 /*****************************************************************/
@@ -404,6 +427,10 @@ void free_data(instance *inst)
 
 
 	cout << "FREEEEE\n\n";
+
+	delete []inst->data_cut;
+
+	delete []inst->set_cut;
 
 	delete []inst->GREEDY_SOL;
 

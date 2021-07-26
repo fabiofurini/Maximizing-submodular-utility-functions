@@ -203,11 +203,21 @@ int main(int argc, char** argv)
 	read_param_file(&inst);
 
 	cout << "\n*****************************\n";
+
 	cout << "NUMBER OF CPUs\t" << inst.number_of_CPU << endl;
 	cout << "TOLL_DERIVATIVE\t" << setprecision(9) << setw(9) << inst.TOLL_DERIVATIVE << endl;
 	cout << "TOLL_VIOL\t" << setprecision(9) << setw(9) << inst.TOLL_VIOL   << endl;
 	cout << "TOLL_VIOL_FRAC_BEN\t" << setprecision(9) << setw(9)  << inst.TOLL_VIOL_FRAC_BEN << endl;
-	cout << "FLAG_GREEDY_SOLs\t" << inst.FLAG_GREEDY_SOL << endl;
+	cout << "FLAG_GREEDY_SOL\t" << inst.FLAG_GREEDY_SOL << endl;
+
+
+	cout << "USE_POLY_MATROID_CUT\t" << inst.USE_POLY_MATROID_CUT << endl;
+	cout << "USE_POLY_MATROID_CUT_FRACT\t" << inst.USE_POLY_MATROID_CUT_FRACT << endl;
+	cout << "USE_MOD_LOWER\t" << inst.USE_MOD_LOWER << endl;
+	cout << "TOLL_VIOL_FRAC_POLY\t" << inst.TOLL_VIOL_FRAC_POLY << endl;
+	cout << "MAX_CUT_FRAC_POLY\t" << inst.MAX_CUT_FRAC_POLY << endl;
+	cout << "USE_POLY_MATROID_CUT_FRACT_ONLY_ROOT\t" << inst.USE_POLY_MATROID_CUT_FRACT_ONLY_ROOT << endl;
+
 	cout << "*****************************\n";
 	////////////////////////////////////////////////////////////////////////////////////////
 

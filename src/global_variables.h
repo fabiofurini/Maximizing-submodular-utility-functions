@@ -33,6 +33,16 @@ using namespace std;
 
 //#define PRINT_SINGLE_FILE_OUTPUT
 
+/*****************************************************************/
+struct valuesSTR
+/*****************************************************************/
+{
+	int metaitem;
+	double score;
+};
+
+
+
 typedef struct
 {
 
@@ -113,7 +123,18 @@ typedef struct
 	double TOLL_VIOL;
 	double TOLL_VIOL_FRAC_BEN;
 	bool FLAG_GREEDY_SOL;//1 for loading the GREEDY SOLUTION
+
+
+	int  USE_POLY_MATROID_CUT;
+	int  USE_POLY_MATROID_CUT_FRACT;
+	int  USE_MOD_LOWER;
+
+	double TOLL_VIOL_FRAC_POLY;
+	int MAX_CUT_FRAC_POLY;
+	int  USE_POLY_MATROID_CUT_FRACT_ONLY_ROOT;
+
 	//////////////////////////////////////////////////////////////////////
+
 
 	///////////////////////////////OBJECTIVE FUNCTION AND CONSTRAINTS////////////
 	double **a; //value item per scenario
@@ -193,6 +214,16 @@ typedef struct
 
 
 	int n_cuts_MOD_LOWER;//number of cuts submodular lower bound
+	int n_cuts_MOD_LOWER_ZERO_DERIVATIVE;//number of cuts submodular lower bound
+
+	int n_cuts_POLY_LOWER;
+	int n_cuts_POLY_LOWER_FRACT;
+
+
+	///////////////////////////////////////////////////////////////////////////////
+	valuesSTR * data_cut;
+	double  *set_cut;
+	///////////////////////////////////////////////////////////////////////////////
 
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -216,6 +247,8 @@ typedef struct
 	double *AUX_SOL_BEN;
 	double *I_TILDE_BEN;
 	///////////////////////////////////////////////////////////////////////////////
+
+
 
 
 	///////////////////////////////////////////////////////////////////////////////

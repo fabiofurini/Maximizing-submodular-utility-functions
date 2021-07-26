@@ -30,9 +30,8 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 		exit(-1);
 	}
 
-
-
 	load_I_TILDE(inst,true,inst->I_TILDE_BEN,inst->_cut_BEN_Y);
+
 
 #ifdef 	DEBUG
 	cout << "metaitems\n";
@@ -63,111 +62,178 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 	for (int k = 0; k < inst->m_scenarios; k++)
 	{
 
-		double  punto=compute_subset_coverage_utility_scenario(inst,inst->_cut_BEN_Y,k);
+		double p         = compute_subset_coverage_utility_scenario(inst,inst->_cut_BEN_Y,k);
 
-		double denominator=compute_val_diff(inst,punto);
+		double f_p       = compute_val_funct(inst,p);
+
+		double f_prime_p = compute_val_diff(inst,p);
+
+		double magic_value= (f_p - f_prime_p * p) / f_prime_p;
+
+		double w=inst->_cut_BEN_Y[inst->n_meta_items+k];
 
 #ifdef 	DEBUG
-		cout << "punto\t" << punto << "\t denominator \t" << denominator << endl;
+		cout << "p\t" << p << "\t f_prime_p \t" << f_prime_p << endl;
 #endif
 
-		if( denominator>-inst->TOLL_DERIVATIVE && denominator<inst->TOLL_DERIVATIVE)
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if( f_prime_p>-inst->TOLL_DERIVATIVE && f_prime_p<inst->TOLL_DERIVATIVE)
 		{
 			cout << "NULL DERIVATIVE!";
-
-			int nzcnt=1;
 
 			inst->_cut_BEN_rmatval[0]=1.0;
 
 			inst->_cut_BEN_rmatind[0]=inst->n_meta_items+k;
 
-			inst->_cut_BEN_RHS = punto;
+			inst->_cut_BEN_RHS = f_p;
 
-			status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_BEN_RHS,'L',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
+			status=CPXcutcallbackadd (env,cbdata,wherefrom,1,inst->_cut_BEN_RHS,'L',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
 			if(status!=0){
 				printf("CPXcutcallbackadd\n");
 				exit(-1);
 			}
 
-			inst->n_cuts_MOD_LOWER++;
+			inst->n_cuts_MOD_LOWER_ZERO_DERIVATIVE++;
 
 			(*useraction_p)=CPX_CALLBACK_SET;
 
 		}
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if(denominator<-inst->TOLL_DERIVATIVE)
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if(f_prime_p<-inst->TOLL_DERIVATIVE)
 		{
 
-
-
-			double nu=inst->_cut_BEN_Y[inst->n_meta_items+k];
-
-			double magic_value= (compute_val_funct(inst,punto) - compute_val_diff(inst,punto) * punto) / compute_val_diff(inst,punto);
-
-			inst->_cut_BEN_RHS=punto;
-
-			if( nu/denominator < punto + magic_value - inst->TOLL_VIOL)
+			if(inst->USE_POLY_MATROID_CUT==0 && inst->USE_MOD_LOWER==0)
 			{
-
-				int nzcnt=inst->n_meta_items+1;
-
-				for (int i = 0; i < inst->n_meta_items; i++)
-				{
-					if(inst->_cut_BEN_Y[i]<0.5)
-					{
-						inst->_cut_BEN_rmatval[i]=-inst->_cut_BEN_super_rho[k][i];
-						inst->_cut_BEN_rmatind[i]=i;
-					}
-					else
-					{
-						inst->_cut_BEN_RHS-=inst->_cut_BEN_single_rho[k][i];
-						inst->_cut_BEN_rmatval[i]=-inst->_cut_BEN_single_rho[k][i];
-						inst->_cut_BEN_rmatind[i]=i;
-					}
-				}
-
-				inst->_cut_BEN_rmatval[inst->n_meta_items]=1.0/denominator;
-
-				inst->_cut_BEN_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
-
-				inst->_cut_BEN_RHS += magic_value;
-
-#ifdef 	DEBUG_CUTS
-				cout << "***MOD_LOWER***\n";
-				for (int i = 0; i < inst->n_meta_items; i++)
-				{
-					cout << "META-ITEM\t" << i << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[i] << "\t \t"<< inst->_cut_BEN_rmatval[i] << endl;
-				}
-				cout << "SCENARIO\t" << k << "\t _cut_BEN_rmatind \t" << inst->_cut_BEN_rmatind[inst->n_meta_items] << "\t \t"<< inst->_cut_BEN_rmatval[inst->n_meta_items] << endl;
-				cout << "RHS\t" << inst->_cut_BEN_RHS << endl;
-				cin.get();
-#endif
-
-				status=CPXcutcallbackadd (env,cbdata,wherefrom,nzcnt,inst->_cut_BEN_RHS,'G',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
-				if(status!=0){
-					printf("CPXcutcallbackadd\n");
-					exit(-1);
-				}
-
-				//				cout << "MOD_LOWER ADDED CUT\n\n";
-				//				cin.get();
-
-				inst->n_cuts_MOD_LOWER++;
-
-				(*useraction_p)=CPX_CALLBACK_SET;
-
+				cout << "\nERROR: use one of the two cuts...\n";
+				exit(-1);
 			}
 
+			if(inst->USE_MOD_LOWER==1)
+			{
+
+				if(w > f_p + inst->TOLL_VIOL)
+				{
+
+					inst->_cut_BEN_RHS=p;
+
+					for (int i = 0; i < inst->n_meta_items; i++)
+					{
+						if(inst->_cut_BEN_Y[i]<0.5)
+						{
+							inst->_cut_BEN_rmatval[i]=-inst->_cut_BEN_super_rho[k][i];
+							inst->_cut_BEN_rmatind[i]=i;
+						}
+						else
+						{
+							inst->_cut_BEN_RHS-=inst->_cut_BEN_single_rho[k][i];
+							inst->_cut_BEN_rmatval[i]=-inst->_cut_BEN_single_rho[k][i];
+							inst->_cut_BEN_rmatind[i]=i;
+						}
+					}
+
+					inst->_cut_BEN_rmatval[inst->n_meta_items]=1.0/f_prime_p;
+
+					inst->_cut_BEN_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
+
+					inst->_cut_BEN_RHS += magic_value;
+
+					status=CPXcutcallbackadd (env,cbdata,wherefrom,inst->n_meta_items+1,inst->_cut_BEN_RHS,'G',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
+					if(status!=0)
+					{
+						printf("CPXcutcallbackadd\n");
+						exit(-1);
+					}
+
+					inst->n_cuts_MOD_LOWER++;
+
+					(*useraction_p)=CPX_CALLBACK_SET;
+
+				}
+			}
+
+
+			if(inst->USE_POLY_MATROID_CUT==1)
+			{
+
+				if(w > f_p + inst->TOLL_VIOL)
+				{
+
+					double magic_value_bis = (f_p - f_prime_p * p);
+
+					for (int i = 0; i < inst->n_meta_items; i++)
+					{
+
+						inst->data_cut[i].score = inst->_cut_BEN_Y[i];
+						inst->data_cut[i].metaitem = i;
+
+						inst->set_cut[i]=0;
+					}
+
+					qsort (inst->data_cut,inst->n_meta_items, sizeof(valuesSTR), compare);
+
+					double F_OLD=0;
+
+					for (int i = 0; i < inst->n_meta_items; i++)
+					{
+
+						int metaitem=inst->data_cut[i].metaitem;
+
+						inst->set_cut[metaitem]=1;
+
+						double F_CURR=compute_subset_coverage_utility_scenario(inst,inst->set_cut,k);
+
+						inst->_cut_BEN_rmatval[metaitem]= (F_CURR - F_OLD) * f_prime_p;
+
+						inst->_cut_BEN_rmatind[metaitem]=metaitem;
+
+						F_OLD = F_CURR;
+
+					}
+
+
+					inst->_cut_BEN_rmatval[inst->n_meta_items] = -1.0 ; //var w
+
+					inst->_cut_BEN_rmatind[inst->n_meta_items] = inst->n_meta_items + k; //var w
+
+					inst->_cut_BEN_RHS = - magic_value_bis;
+
+					status=CPXcutcallbackadd (env,cbdata,wherefrom,inst->n_meta_items+1,inst->_cut_BEN_RHS,'G',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
+					if(status!=0){
+						printf("CPXcutcallbackadd\n");
+						exit(-1);
+					}
+
+					(*useraction_p)=CPX_CALLBACK_SET;
+
+					inst->n_cuts_POLY_LOWER++;
+
+				}
+			}
 		}
+
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if(denominator>inst->TOLL_DERIVATIVE)
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if(f_prime_p>inst->TOLL_DERIVATIVE)
 		{
 
-			double magic_value= (compute_val_funct(inst,punto) - compute_val_diff(inst,punto) * punto) ;
+			double magic_value= (f_p - f_prime_p * p) ;
 
 			for (int llll = 0; llll < 2; llll++)
 			{
@@ -201,7 +267,7 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 
 					for (int  k = inst->NFS[i]; k < inst->NFS[i+1]; k++ )
 					{
-						inst->_cut_BEN_rmatval[i] -= (inst->AUX_SOL_BEN[inst->AFS[k]]*denominator);
+						inst->_cut_BEN_rmatval[i] -= (inst->AUX_SOL_BEN[inst->AFS[k]]*f_prime_p);
 					}
 
 					first_part -= (inst->_cut_BEN_rmatval[i] *inst->_cut_BEN_Y[i]);
@@ -214,7 +280,7 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 
 				inst->_cut_BEN_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
 
-				inst->_cut_BEN_RHS*=denominator;
+				inst->_cut_BEN_RHS*=f_prime_p;
 
 				inst->_cut_BEN_RHS+=magic_value;
 
@@ -259,6 +325,9 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 				}
 			}
 		}
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	}
 
@@ -270,7 +339,6 @@ int CPXPUBLIC mycutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *
 int CPXPUBLIC myusercutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,void *cbhandle,int *useraction_p)
 /*****************************************************************/
 {
-
 
 
 	(*useraction_p)=CPX_CALLBACK_DEFAULT;
@@ -292,23 +360,121 @@ int CPXPUBLIC myusercutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,vo
 	for (int k = 0; k < inst->m_scenarios; k++)
 	{
 
-		double  punto=compute_subset_coverage_utility_scenario_fract(inst,inst->_cut_BEN_Y,k);
+		double  p=compute_subset_coverage_utility_scenario_fract(inst,inst->_cut_BEN_Y,k);
 
-		double denominator=compute_val_diff(inst,punto);
+		double f_p = compute_val_funct(inst,p);
+
+		double f_prime_p=compute_val_diff(inst,p);
+
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if(denominator<-inst->TOLL_DERIVATIVE)
+		//NULL DERIVATIVE CASE
+		if( f_prime_p>-inst->TOLL_DERIVATIVE && f_prime_p<inst->TOLL_DERIVATIVE)
 		{
 			return 0;
 		}
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		if(denominator>inst->TOLL_DERIVATIVE)
+		if(f_prime_p<-inst->TOLL_DERIVATIVE)
 		{
 
-			double magic_value= (compute_val_funct(inst,punto) - compute_val_diff(inst,punto) * punto) ;
+			if(inst->USE_POLY_MATROID_CUT_FRACT==1)
+			{
+
+				if(inst->n_cuts_POLY_LOWER_FRACT >=inst->MAX_CUT_FRAC_POLY)
+				{
+					return 0;
+				}
+
+				int _NODE;
+				status=CPXgetcallbackinfo(env,cbdata,wherefrom,CPX_CALLBACK_INFO_NODE_COUNT,&_NODE);
+				if(status!=0)
+				{
+					printf("cannot get CPXgetcallbackinfo\n");
+					exit(-1);
+				}
+
+				if(inst->USE_POLY_MATROID_CUT_FRACT_ONLY_ROOT==1 && _NODE!=0)
+				{
+					return 0;
+				}
+
+				double magic_value= (f_p - f_prime_p * p) / f_prime_p;
+
+				double magic_value_bis = (f_p - f_prime_p * p);
+
+				double val_LHS=0;
+
+				double val_RHS= magic_value_bis;
+
+				double w=inst->_cut_BEN_Y[inst->n_meta_items+k];
+
+				for (int i = 0; i < inst->n_meta_items; i++)
+				{
+
+					inst->data_cut[i].score = inst->_cut_BEN_Y[i];
+					inst->data_cut[i].metaitem = i;
+
+					inst->set_cut[i]=0;
+				}
+
+				qsort (inst->data_cut,inst->n_meta_items, sizeof(valuesSTR), compare);
+
+				double F_OLD=0;
+
+				for (int i = 0; i < inst->n_meta_items; i++)
+				{
+
+					int metaitem=inst->data_cut[i].metaitem;
+
+					inst->set_cut[metaitem]=1;
+
+					double F_CURR=compute_subset_coverage_utility_scenario(inst,inst->set_cut,k);
+
+					inst->_cut_BEN_rmatval[metaitem]= (F_CURR - F_OLD) * f_prime_p;
+
+					val_LHS += (F_CURR - F_OLD) * inst->_cut_BEN_Y[metaitem];
+
+					inst->_cut_BEN_rmatind[metaitem]=metaitem;
+
+					F_OLD = F_CURR;
+
+				}
+
+				//cout << "POLY:\t" << val_LHS + magic_value - w/derivative << endl;
+
+				if( val_LHS + magic_value - w/f_prime_p >  inst->TOLL_VIOL_FRAC_POLY)
+				{
+					inst->_cut_BEN_rmatval[inst->n_meta_items] = -1.0 ; //var w
+
+					inst->_cut_BEN_rmatind[inst->n_meta_items] = inst->n_meta_items + k; //var w
+
+					inst->_cut_BEN_RHS = - magic_value_bis;
+
+					status=CPXcutcallbackadd (env,cbdata,wherefrom,inst->n_meta_items+1,inst->_cut_BEN_RHS,'G',inst->_cut_BEN_rmatind,inst->_cut_BEN_rmatval,0);
+					if(status!=0){
+						printf("CPXcutcallbackadd\n");
+						exit(-1);
+					}
+
+					(*useraction_p)=CPX_CALLBACK_SET;
+
+					inst->n_cuts_POLY_LOWER_FRACT++;
+
+				}
+			}
+		}
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if(f_prime_p>inst->TOLL_DERIVATIVE)
+		{
+
+			double magic_value= (f_p - f_prime_p * p) ;
 
 
 			for (int llll = 0; llll < 2; llll++)
@@ -344,7 +510,7 @@ int CPXPUBLIC myusercutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,vo
 
 					for (int  k = inst->NFS[i]; k < inst->NFS[i+1]; k++ )
 					{
-						inst->_cut_BEN_rmatval[i] -= (inst->AUX_SOL_BEN[inst->AFS[k]]*denominator);
+						inst->_cut_BEN_rmatval[i] -= (inst->AUX_SOL_BEN[inst->AFS[k]]*f_prime_p);
 					}
 
 					first_part -= (inst->_cut_BEN_rmatval[i] *inst->_cut_BEN_Y[i]);
@@ -356,7 +522,7 @@ int CPXPUBLIC myusercutcallback_BEN(CPXCENVptr env,void *cbdata,int wherefrom,vo
 
 				inst->_cut_BEN_rmatind[inst->n_meta_items]=inst->n_meta_items+k;
 
-				inst->_cut_BEN_RHS*=denominator;
+				inst->_cut_BEN_RHS*=f_prime_p;
 
 				inst->_cut_BEN_RHS+=magic_value;
 
@@ -408,6 +574,11 @@ void build_model_BEN(instance *inst)
 	inst->n_cuts_BEN_2=0;
 	inst->n_cuts_BEN_FRAC_2=0;
 	inst->n_cuts_MOD_LOWER=0;
+	inst->n_cuts_MOD_LOWER_ZERO_DERIVATIVE=0;
+
+	inst->n_cuts_POLY_LOWER=0;
+	inst->n_cuts_POLY_LOWER_FRACT=0;
+
 
 	inst->_cut_BEN_rmatval=new double[inst->n_meta_items+1];
 	inst->_cut_BEN_Y=new double[inst->n_items+inst->m_scenarios];
@@ -1142,6 +1313,11 @@ void solve_model_BEN(instance *inst)
 
 	cout <<"n_cuts_MOD_LOWER\t"<<  inst->n_cuts_MOD_LOWER << "\n";
 
+	cout <<"n_cuts_MOD_LOWER_ZERO_DERIVATIVE\t"<<  inst->n_cuts_MOD_LOWER_ZERO_DERIVATIVE << "\n";
+
+	cout <<"n_cuts_POLY_LOWER\t"<<  inst->n_cuts_POLY_LOWER << "\n";
+	cout <<"n_cuts_POLY_LOWER_FRACT\t"<<  inst->n_cuts_POLY_LOWER_FRACT << "\n";
+
 
 	//////////////////////////////////////////////////////////////////////////////////
 	ofstream compact_file;
@@ -1211,7 +1387,11 @@ void solve_model_BEN(instance *inst)
 
 			<<   inst->alpha << "\t"
 
-			<<    inst->AVERAGE_DEMAND
+			<<    inst->AVERAGE_DEMAND << "\t"
+
+			<<   inst->n_cuts_MOD_LOWER_ZERO_DERIVATIVE << "\t"
+			<<   inst->n_cuts_POLY_LOWER << "\t"
+			<<   inst->n_cuts_POLY_LOWER_FRACT << "\t"
 
 
 			<< endl;
@@ -1291,7 +1471,11 @@ void solve_model_BEN(instance *inst)
 
 			<<   inst->alpha << "\t"
 
-			<<    inst->AVERAGE_DEMAND
+			<<    inst->AVERAGE_DEMAND << "\t"
+
+			<<   inst->n_cuts_MOD_LOWER_ZERO_DERIVATIVE << "\t"
+			<<   inst->n_cuts_POLY_LOWER << "\t"
+			<<   inst->n_cuts_POLY_LOWER_FRACT << "\t"
 
 			<< endl;
 	compact_file_single.close();
