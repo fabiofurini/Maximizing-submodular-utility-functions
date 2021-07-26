@@ -191,9 +191,9 @@ int CPXPUBLIC mycutcallback_MOD_OUTER(CPXCENVptr env,void *cbdata,int wherefrom,
 		double w=inst->_cut_MOD_OUTER_Y[inst->n_meta_items+k];
 
 
-//		double  punto=compute_subset_coverage_utility_scenario(inst,inst->_cut_MOD_OUTER_Y,k);
-//
-//		double denominator=compute_val_diff(inst,punto);
+		//		double  punto=compute_subset_coverage_utility_scenario(inst,inst->_cut_MOD_OUTER_Y,k);
+		//
+		//		double denominator=compute_val_diff(inst,punto);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if( f_prime_p>-inst->TOLL_DERIVATIVE && f_prime_p<inst->TOLL_DERIVATIVE)
@@ -1325,8 +1325,8 @@ void solve_model_MOD_OUTER(instance *inst)
 
 
 			<<   inst->n_cuts_MOD_LOWER_ZERO_DERIVATIVE << "\t"
-					<<   inst->n_cuts_POLY_LOWER << "\t"
-					<<   inst->n_cuts_POLY_LOWER_FRACT << "\t"
+			<<   inst->n_cuts_POLY_LOWER << "\t"
+			<<   inst->n_cuts_POLY_LOWER_FRACT << "\t"
 			<< endl;
 	compact_file.close();
 	//////////////////////////////////////////////////////////////////////////////////
@@ -1411,8 +1411,8 @@ void solve_model_MOD_OUTER(instance *inst)
 			<<    inst->AVERAGE_DEMAND << "\t"
 
 			<<   inst->n_cuts_MOD_LOWER_ZERO_DERIVATIVE << "\t"
-					<<   inst->n_cuts_POLY_LOWER << "\t"
-					<<   inst->n_cuts_POLY_LOWER_FRACT << "\t"
+			<<   inst->n_cuts_POLY_LOWER << "\t"
+			<<   inst->n_cuts_POLY_LOWER_FRACT << "\t"
 
 			<< endl;
 	compact_file_single.close();
